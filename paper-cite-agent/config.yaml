@@ -1,0 +1,42 @@
+﻿# paper-cite-agent 配置文件
+
+# Claude API 配置
+env:
+  ANTHROPIC_AUTH_TOKEN: "sk-YZGMbsU7j1xwzKZzyWBwUtzE3WqMKr0UJbIEnDInPhvPiuan"
+  ANTHROPIC_BASE_URL: "https://api.linkapi.ai"
+  API_TIMEOUT_MS: "600000"
+
+# 兼容旧配置（可选）
+anthropic:
+  model: "AWS/claude-opus-4-6"
+
+# 学术搜索配置
+search:
+  # Crossref API
+  crossref_email: ""
+  max_results: 10
+  min_citations: 0
+
+  # Semantic Scholar API
+  use_semantic_scholar: true
+
+  # 中文文献目标占比（0.55 = 55%）
+  zh_ratio: 0.55
+
+# 文献评分配置
+ranking:
+  top_k: 5
+  # sentence-transformers 可用时用语义相似度（建议 0.2）
+  # 未安装时回退到 Jaccard 关键词匹配（建议 0.05）
+  similarity_threshold: 0.05
+
+# Word 标注配置
+annotation:
+  highlight_color: "yellow"
+  add_comments: true
+
+# 输出配置
+output:
+  reference_format: "APA"
+  save_references_txt: true
+  write_to_docx: true

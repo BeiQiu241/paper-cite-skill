@@ -1,0 +1,314 @@
+【推荐参考文献】
+============================================================
+
+Jin, D., Pan, E., Oufattole, N., Weng, W., & Fang, H. (2021). What Disease Does This Patient Have? A Large-Scale Open Domain Question Answering Dataset from Medical Exams. https://doi.org/10.3390/app11146421
+
+Sun, Y., Wang, S., Li, Y., Feng, S., & Tian, H. (2020). ERNIE 2.0: A Continual Pre-Training Framework for Language Understanding. https://doi.org/10.1609/aaai.v34i05.6428
+
+Cao, J., & Cao, J. (2024). CPEQA: A Large Language Model Based Knowledge Base Retrieval System for Chinese Confidentiality Knowledge Question Answering. https://doi.org/10.3390/electronics13214195
+
+Zhao, Y., Duan, N., Bao, J., Chen, P., & Zhou, M. (2016). DocChat: An Information Retrieval Approach for Chatbot Engines Using Unstructured Documents. https://doi.org/10.18653/v1/p16-1049
+
+Siriwardhana, S., Weerasekera, R., Wen, E., Kaluarachchi, T., & Rana, R. (2023). Improving the Domain Adaptation of Retrieval Augmented Generation (RAG) Models for Open Domain Question Answering. https://doi.org/10.1162/tacl_a_00530
+
+
+
+【全部候选文献（按相关度排序）】
+============================================================
+共 145 篇
+
+── 中国机构/中文文献（79 篇）──
+
+Qu, Y., Ding, Y., Liu, J., Liu, K., & Ren, R. (2021). RocketQA: An Optimized Training Approach to Dense Passage Retrieval for Open-Domain Question Answering. https://doi.org/10.18653/v1/2021.naacl-main.466
+
+Zhao, X., Li, Z., Wu, S., Zhan, Y., & Zhang, C. (2021). Deep Text Matching in Medical Question Answering System. https://doi.org/10.1145/3491396.3506536
+
+Zhong, H., Xiao, C., Tu, C., Zhang, T., & Liu, Z. (2020). How Does NLP Benefit Legal System: A Summary of Legal Artificial Intelligence. https://doi.org/10.18653/v1/2020.acl-main.466
+
+Ren, R., Qu, Y., Liu, J., Zhao, W. X., & She, Q. (2021). RocketQAv2: A Joint Training Method for Dense Passage Retrieval and Passage Re-ranking. https://doi.org/10.18653/v1/2021.emnlp-main.224
+
+Zhong, H., Xiao, C., Tu, C., Zhang, T., & Liu, Z. (2020). JEC-QA: A Legal-Domain Question Answering Dataset. https://doi.org/10.1609/aaai.v34i05.6519
+
+Liu, B., Niu, D., Wei, H., Lin, J., & He, Y. (2019). Matching Article Pairs with Graphical Decomposition and Convolutions. https://doi.org/10.18653/v1/p19-1632
+
+Chen, J., Zhang, R., Guo, J., Liu, Y., & Fan, Y. (2022). CorpusBrain: Pre-train a Generative Retrieval Model for Knowledge-Intensive Language Tasks. https://doi.org/10.1145/3511808.3557271
+
+Chen, J., Zhang, R., Guo, J., Fan, Y., & Cheng, X. (2022). GERE: Generative Evidence Retrieval for Fact Verification. https://doi.org/10.1145/3477495.3531827
+
+Li, J., Li, Y., Li, G., Hu, X., & Xia, X. (2021). EditSum: A Retrieve-and-Edit Framework for Source Code Summarization. https://doi.org/10.1109/ase51524.2021.9678724
+
+Huang, Z., Xu, S., Hu, M., Wang, X., & Qiu, J. (2020). Recent Trends in Deep Learning Based Open-Domain Textual Question Answering Systems. https://doi.org/10.1109/access.2020.2988903
+
+Wu, C., Zhang, R., Guo, J., Rijke, M. d., & Fan, Y. (2022). PRADA: Practical Black-box Adversarial Attacks against Neural Ranking Models. https://doi.org/10.1145/3576923
+
+Yang, S., Zou, L., Wang, Z., Yan, J., & Wen, J. (2017). Efficiently Answering Technical Questions — A Knowledge Graph Approach. https://doi.org/10.1609/aaai.v31i1.10956
+
+Sun, W., Shi, Z., Gao, S., Ren, P., & Rijke, M. d. (2023). Contrastive Learning Reduces Hallucination in Conversations. https://doi.org/10.1609/aaai.v37i11.26596
+
+Zhang, J., Bu, H., Wen, H., Liu, Y., & Fei, H. (2025). When LLMs meet cybersecurity: a systematic literature review. https://doi.org/10.1186/s42400-025-00361-w
+
+Abdulla, A., Lin, H., Xu, B., & Banbhrani, S. K. (2016). Improving biomedical information retrieval by linear combinations of different query expansion techniques. https://doi.org/10.1186/s12859-016-1092-8
+
+Wu, Y., Zhao, J., & Xu, B. (2003). Chinese Named Entity Recognition combining a statistical model with human knowledge. https://doi.org/10.3115/1119384.1119393
+
+Liu, Y., Yu, L., & Reichle, E. D. (2024). Towards a model of eye-movement control in Chinese reading. https://doi.org/10.3758/s13423-024-02570-9
+
+Zhang, L., Nie, X., Zhang, M., Gu, M., & Geissen, V. (2022). Lexicon and attention-based named entity recognition for kiwifruit diseases and pests: A Deep learning approach. https://doi.org/10.3389/fpls.2022.1053449
+
+Luo, J., Xiong, W., Du, J., Liu, Y., & Li, J. (2021). Traditional Chinese Medicine Text Similarity Calculation Model Based on the Bidirectional Temporal Siamese Network. https://doi.org/10.1155/2021/2337924
+
+Cao, L., Wu, C., Luo, G., Guo, C., & Zheng, A. (2024). Online biomedical named entities recognition by data and knowledge-driven model. https://doi.org/10.1016/j.artmed.2024.102813
+
+Zhang, Z., Yu, Z., Liu, T., & Li, S. (2010). Automatic Recognition of Focus and Interrogative Word in Chinese Question for Classification. https://doi.org/10.5539/cis.v3n1p168
+
+Sun, Y., Wang, S., Li, Y., Feng, S., & Tian, H. (2020). ERNIE 2.0: A Continual Pre-Training Framework for Language Understanding. https://doi.org/10.1609/aaai.v34i05.6428
+
+Tan, X., Deng, G., & Hu, X. (2021). Multi-granularity context semantic fusion model for Chinese event detection. https://doi.org/10.1145/3485314.3485322
+
+Guo, Y., Barnes, S. J., & Jia, Q. (2016). Mining meaning from online ratings and reviews: Tourist satisfaction analysis using latent dirichlet allocation. https://doi.org/10.1016/j.tourman.2016.09.009
+
+Jiang, W., Guan, Y., & Wang, X. (2006). An Improved Unknown Word Recognition Model based on Multi-Knowledge Source Method. https://doi.org/10.1109/isda.2006.253719
+
+Jiao, L., Zhang, F., Liu, F., Yang, S., & Li, L. (2019). A Survey of Deep Learning-Based Object Detection. https://doi.org/10.1109/access.2019.2939201
+
+Wang, L., Ma, C., Feng, X., Zhang, Z., & Yang, H. (2024). A survey on large language model based autonomous agents. https://doi.org/10.1007/s11704-024-40231-1
+
+Zhang, Z., Wu, Y., Zhao, H., Li, Z., & Zhang, S. (2020). Semantics-Aware BERT for Language Understanding. https://doi.org/10.1609/aaai.v34i05.6510
+
+Yao, L., Chu, Z., Li, S., Li, Y., & Gao, J. (2021). A Survey on Causal Inference. https://doi.org/10.1145/3444944
+
+Morgan, A. A., Lu, Z., Wang, X., Cohen, A., & Fluck, J. (2008). Overview of BioCreative II gene normalization. https://doi.org/10.1186/gb-2008-9-s2-s3
+
+Yang, R., Zhang, J., Gao, X., Ji, F., & Chen, H. (2019). Simple and Effective Text Matching with Richer Alignment Features. https://doi.org/10.18653/v1/p19-1465
+
+Luo, K., Lin, F., Luo, X., & Zhu, K. Q. (2018). Knowledge Base Question Answering via Encoding of Complex Query Graphs. https://doi.org/10.18653/v1/d18-1242
+
+Dai, Y., Wang, S., Xiong, N., & Guo, W. (2020). A Survey on Knowledge Graph Embedding: Approaches, Applications and Benchmarks. https://doi.org/10.3390/electronics9050750
+
+Zuo, C., Qian, J., Feng, S., Yin, W., & Li, Y. (2022). Deep learning in optical metrology: a review. https://doi.org/10.1038/s41377-022-00714-x
+
+Chen, J., Liu, Z., Huang, X., Wu, C., & Liu, Q. (2024). When large language models meet personalization: perspectives of challenges and opportunities. https://doi.org/10.1007/s11280-024-01276-1
+
+Pang, L., Lan, Y., Guo, J., Xu, J., & Wan, S. (2016). Text Matching as Image Recognition. https://doi.org/10.1609/aaai.v30i1.10341
+
+Liu, X., Wang, S., Lu, S., Yin, Z., & Li, X. (2023). Adapting Feature Selection Algorithms for the Classification of Chinese Texts. https://doi.org/10.3390/systems11090483
+
+Wang, D., Liu, P., Zheng, Y., Qiu, X., & Huang, X. (2020). Heterogeneous Graph Neural Networks for Extractive Document Summarization. https://doi.org/10.18653/v1/2020.acl-main.553
+
+Li, W., Gao, C., Niu, G., Xiao, X., & Liu, H. (2021). UNIMO: Towards Unified-Modal Understanding and Generation via Cross-Modal Contrastive Learning. https://doi.org/10.18653/v1/2021.acl-long.202
+
+Xu, N., Wang, P., Chen, L., Pan, L., & Wang, X. (2020). Distinguish Confusing Law Articles for Legal Judgment Prediction. https://doi.org/10.18653/v1/2020.acl-main.280
+
+Hu, J., Li, S., Yao, Y., Yu, L., & Yang, G. (2018). Patent Keyword Extraction Algorithm Based on Distributed Representation for Patent Classification. https://doi.org/10.3390/e20020104
+
+Hu, C., Xu, Z., Liu, Y., Mei, L., & Chen, L. (2014). Semantic Link Network-Based Model for Organizing Multimedia Big Data. https://doi.org/10.1109/tetc.2014.2316525
+
+Janssens, F., Zhang, L., Moor, B. D., & Glänzel, W. (2009). Hybrid clustering for validation and improvement of subject-classification schemes. https://doi.org/10.1016/j.ipm.2009.06.003
+
+Zhu, J., Li, H., Liu, T., Zhou, Y., & Zhang, J. (2018). MSMO: Multimodal Summarization with Multimodal Output. https://doi.org/10.18653/v1/d18-1448
+
+Feng, Z., Guo, D., Tang, D., Duan, N., & Feng, X. (2020). CodeBERT: A Pre-Trained Model for Programming and Natural Languages. https://doi.org/10.18653/v1/2020.findings-emnlp.139
+
+Rinella, M. E., Lazarus, J. V., Ratziu, V., Francque, S., & Sanyal, A. J. (2023). A multisociety Delphi consensus statement on new fatty liver disease nomenclature. https://doi.org/10.1016/j.jhep.2023.06.003
+
+Islam, S. M. R., Kwak, D., Kabir, M. H., Hossain, M., & Kwak, K. S. (2015). The Internet of Things for Health Care: A Comprehensive Survey. https://doi.org/10.1109/access.2015.2437951
+
+Patel, V., Saxena, S., Lund, C., Thornicroft, G., & Baingana, F. (2018). The Lancet Commission on global mental health and sustainable development. https://doi.org/10.1016/s0140-6736(18)31612-x
+
+Zhang, Z., Han, X., Liu, Z., Jiang, X., & Sun, M. (2019). ERNIE: Enhanced Language Representation with Informative Entities. https://doi.org/10.18653/v1/p19-1139
+
+Statello, L., Guo, C., Chen, L., & Huarte, M. (2020). Gene regulation by long non-coding RNAs and its biological functions. https://doi.org/10.1038/s41580-020-00315-9
+
+Liu, L., Ouyang, W., Wang, X., Fieguth, P., & Chen, J. (2019). Deep Learning for Generic Object Detection: A Survey. https://doi.org/10.1007/s11263-019-01247-4
+
+Guo, M., Xu, T., Liu, J., Liu, Z., & Jiang, P. (2022). Attention mechanisms in computer vision: A survey. https://doi.org/10.1007/s41095-022-0271-y
+
+Zhou, Z., Chen, X., Li, E., Zeng, L., & Luo, K. (2019). Edge Intelligence: Paving the Last Mile of Artificial Intelligence With Edge Computing. https://doi.org/10.1109/jproc.2019.2918951
+
+Jin, D., Pan, E., Oufattole, N., Weng, W., & Fang, H. (2021). What Disease Does This Patient Have? A Large-Scale Open Domain Question Answering Dataset from Medical Exams. https://doi.org/10.3390/app11146421
+
+Qiu, M., Li, F., Wang, S., Gao, X., & Chen, Y. (2017). AliMe Chat: A Sequence to Sequence and Rerank based Chatbot Engine. https://doi.org/10.18653/v1/p17-2079
+
+Sun, W., Yan, L., Ma, X., Wang, S., & Ren, P. (2023). Is ChatGPT Good at Search? Investigating Large Language Models as Re-Ranking Agents. https://doi.org/10.18653/v1/2023.emnlp-main.923
+
+Tang, J., Zhang, J., Jin, R., Yang, Z., & Cai, K. (2010). Topic level expertise search over heterogeneous networks. https://doi.org/10.1007/s10994-010-5212-9
+
+Zhao, Y., Duan, N., Bao, J., Chen, P., & Zhou, M. (2016). DocChat: An Information Retrieval Approach for Chatbot Engines Using Unstructured Documents. https://doi.org/10.18653/v1/p16-1049
+
+Li, C., Yates, A., MacAvaney, S., He, B., & Sun, Y. (2023). PARADE: Passage Representation Aggregation forDocument Reranking. https://doi.org/10.1145/3600088
+
+Lin, Y., Ji, H., Liu, Z., & Sun, M. (2018). Denoising Distantly Supervised Open-Domain Question Answering. https://doi.org/10.18653/v1/p18-1161
+
+Wang, Y., Huang, M., Zhu, X., & Li, Z. (2016). Attention-based LSTM for Aspect-level Sentiment Classification. https://doi.org/10.18653/v1/d16-1058
+
+Li, X., Sun, X., Meng, Y., Liang, J., & Wu, F. (2020). Dice Loss for Data-imbalanced NLP Tasks. https://doi.org/10.18653/v1/2020.acl-main.45
+
+Smith, L., Tanabe, L., Ando, R., Kuo, C., & Chung, I. (2008). Overview of BioCreative II gene mention recognition. https://doi.org/10.1186/gb-2008-9-s2-s2
+
+Dashtipour, K., Poria, S., Hussain, A., Cambria, E., & Hawalah, A. (2016). Multilingual Sentiment Analysis: State of the Art and Independent Comparison of Techniques. https://doi.org/10.1007/s12559-016-9415-7
+
+Wang, L., Cao, Z., Melo, G. d., & Liu, Z. (2016). Relation Classification via Multi-Level Attention CNNs. https://doi.org/10.18653/v1/p16-1123
+
+Wang, Z., Zhang, J., Feng, J., & Chen, Z. (2014). Knowledge Graph and Text Jointly Embedding. https://doi.org/10.3115/v1/d14-1167
+
+Xu, K., Reddy, S., Feng, Y., Huang, S., & Zhao, D. (2016). Question Answering on Freebase via Relation Extraction and Textual Evidence. https://doi.org/10.18653/v1/p16-1220
+
+Mou, L., Zhao, M., Yan, R., Li, G., & Xu, Y. (2016). How Transferable are Neural Networks in NLP Applications?. https://doi.org/10.18653/v1/d16-1046
+
+Li, F., Peng, W., Chen, Y., Wang, Q., & Lu, P. (2020). Event Extraction as Multi-turn Question Answering. https://doi.org/10.18653/v1/2020.findings-emnlp.73
+
+Zou, L., Zhang, S., Cai, H., Ma, D., & Cheng, S. (2021). Pre-trained Language Model based Ranking in Baidu Search. https://doi.org/10.1145/3447548.3467147
+
+Zou, L., Lu, W., Liu, Y., Cai, H., & Chu, X. (2022). Pre-trained Language Model-based Retrieval and Ranking for Web Search. https://doi.org/10.1145/3568681
+
+Feng, Y., You, H., Zhang, Z., Ji, R., & Gao, Y. (2019). Hypergraph Neural Networks. https://doi.org/10.1609/aaai.v33i01.33013558
+
+Shan, D., Zhao, W. X., Chen, R., Shu, B., & Wang, Z. (2012). EventSearch. https://doi.org/10.1145/2339530.2339781
+
+Zhang, H., Wang, D., Wu, W., & Hu, H. (2012). Term frequency – function of document frequency: a new term weighting scheme for enterprise information retrieval. https://doi.org/10.1080/17517575.2012.665945
+
+Shang, L., Lu, Z., & Li, H. (2015). Neural Responding Machine for Short-Text Conversation. https://doi.org/10.3115/v1/p15-1152
+
+Xiong, C., Dai, Z., Callan, J., Liu, Z., & Power, R. (2017). End-to-End Neural Ad-hoc Ranking with Kernel Pooling. https://doi.org/10.1145/3077136.3080809
+
+Xu, C. F., & Xu, H. H. (2014). Full-Text Search Engine Technology Research Based on Lucene. https://doi.org/10.4028/www.scientific.net/amr.952.355
+
+Hu, H., Wen, Y., Chua, T., & Li, X. (2014). Toward Scalable Systems for Big Data Analytics: A Technology Tutorial. https://doi.org/10.1109/access.2014.2332453
+
+Gao, C., Zheng, Y., Li, N., Li, Y., & Qin, Y. (2023). A Survey of Graph Neural Networks for Recommender Systems: Challenges, Methods, and Directions. https://doi.org/10.1145/3568022
+
+── 英文文献（66 篇）──
+
+Hassan, S. M. O., & Atwell, E. (2023). Using TF-IDF to Enhance Information Retrieval in Hadith Corpus. https://doi.org/10.21275/sr231007002235
+
+TANG, Y., LIN, L., LUO, Y., & PAN, Y. (2009). Survey on information retrieval system based on question answering system. https://doi.org/10.3724/sp.j.1087.2008.02745
+
+Rinaldi, A., Hiryanto, L., & Marwadi, V. C. (2025). PENERAPAN TF-IDF DAN COSINE SIMILARITY PADA QUESTION AND ANSWERING SYSTEM TERKAIT INFORMASI KONSOL DAN GAME PLAYSTATION. https://doi.org/10.24912/jiksi.v13i2.34305
+
+Wang, H. (2024). Automatic question-answering modeling in English by integrating TF-IDF and segmentation algorithms. https://doi.org/10.1016/j.sasc.2024.200087
+
+Hakdağlı, Ö. (2024). Hybrid Question-Answering System: A FAISS and BM25 Approach for Extracting Information from Technical Document. https://doi.org/10.56038/oprd.v5i1.535
+
+Mardiah, A., Dillah, S., Surianto, D. F., Fadilah, N., & Zain, S. G. (2025). Classification of Livin' by Mandiri Customer Satisfaction Using MLP with BM25 and TF-IDF Feature Weighting. https://doi.org/10.22219/kinetik.v10i3.2248
+
+HUANG, C., YIN, J., & HOU, F. (2011). A Text Similarity Measurement Combining Word Semantic Information with TF-IDF Method. https://doi.org/10.3724/sp.j.1016.2011.00856
+
+Jimenez, S., Cucerzan, S., Gonzalez, F. A., Gelbukh, A., & Dueñas, G. (2018). BM25-CTF: Improving TF and IDF factors in BM25 by using collection term frequencies. https://doi.org/10.3233/jifs-169475
+
+Azzam, S., & Humphreys, K. (2006). New Directions in Question Answering. https://doi.org/10.1007/s10791-006-8702-4
+
+García-Cumbreras, M. Á., Martínez-Santiago, F., & Ureña-López, L. A. (2011). Architecture and evaluation of BRUJA, a multilingual question answering system. https://doi.org/10.1007/s10791-011-9177-5
+
+Dhandapani, A., & Vadivel, V. (2022). Template-Based Question Answering System Over the Semantic Web. https://doi.org/10.4018/ijirr.300333
+
+K, L. S., & P, M. I. (2021). Review and Analysis of Different Approaches to Semantic Level Question Answering and Information Retrieval. https://doi.org/10.21275/sr21121141135
+
+Bhattacharyya, A. (2023). Revolutionizing Knowledge Retrieval: A Comprehensive Study of Question Answering System. https://doi.org/10.2139/ssrn.4649585
+
+Zanibbi, R., Mansouri, B., & Agarwal, A. (2025). Mathematical Information Retrieval: Search and Question Answering. https://doi.org/10.1561/1500000095
+
+Chamorro-Padial, J., Rodrigo-Ginés, F., & Rodríguez-Sánchez, R. (2022). Finding answers to COVID-19-specific questions: An information retrieval system based on latent keywords and adapted TF-IDF. https://doi.org/10.1177/01655515221110995
+
+Baranow, U. G. (2004). Natural language processing for online applications; text retrieval, extraction and categorization. https://doi.org/10.5007/1518-2924.2004v9nesp2p94
+
+Mishchenko, L., & Klymenko, I. (2023). Recognizing fake news based on natural language processing using the BM25 algorithm with fine-tuned parameters. https://doi.org/10.15587/1729-4061.2023.293513
+
+Park, G., Baek, Y., & Lee, H. (2005). Re-ranking algorithm using post-retrieval clustering for content-based image retrieval. https://doi.org/10.1016/j.ipm.2003.08.002
+
+Yeshambel, T., Mothe, J., & Assabie, Y. (2023). Learned Text Representation for Amharic Information Retrieval and Natural Language Processing. https://doi.org/10.3390/info14030195
+
+Cambazoglu, B. B., & Aykanat, C. (2006). Performance of query processing implementations in ranking-based text retrieval systems using inverted indices. https://doi.org/10.1016/j.ipm.2005.06.004
+
+Smirnov, I. V. (2024). Multilevel Natural Language Processing for Intelligent Information Retrieval and Text Mining. https://doi.org/10.3103/s014768822470059x
+
+Park, G., Baek, Y., & Lee, H. (2005). Erratum to “Re-ranking algorithm using post-retrieval clustering for content-based image retrieval” [Information Processing and Management 41 (2004) 177–194]. https://doi.org/10.1016/j.ipm.2004.09.002
+
+Deguchi, H. (2023). Subset Retrieval Nearest Neighbor Machine Translation. https://doi.org/10.5715/jnlp.30.1245
+
+Nakpih, C. I. (2024). A modified Vector Space Model for semantic information retrieval. https://doi.org/10.1016/j.nlp.2024.100081
+
+Cohen, K. B. (2004). <b>Natural language processing for online applications:</b>
+                    Text retrieval, extraction and categorization. By Peter Jackson and Isabelle Moulinier. Philadelphia: John Benjamins, 2002. Pp. 225. ISBN 1588112500. $75 (Hb).. https://doi.org/10.1353/lan.2004.0017
+
+Shen, M., Kawahara, D., & Kurohashi, S. (2016). Chinese Word Segmentation and Unknown Word Extraction by Mining Maximized Substring. https://doi.org/10.5715/jnlp.23.235
+
+Mason, D. (2010). What's in a Word‐list? Investigating Word Frequency and Keyword Extraction20103Edited by Dawn Archer. <i>What's in a Word‐list? Investigating Word Frequency and Keyword Extraction</i>. Farnham: Ashgate Publishing 2009. 179 pp., ISBN: 9780754672401 £55.00 hard cover. https://doi.org/10.1108/07378831011096358
+
+YU, C., & BESSMERTNY, I. (2017). Contrastive Domain Term Extraction from Chinese Texts without Word Segmentation. https://doi.org/10.12783/dtssehs/aems2017/8275
+
+Wei, C. (2015). Domain-specific Chinese Term Extraction via Word Segmentation Optimization. https://doi.org/10.12733/jics20107131
+
+Pan, R. (2023). Automatic Keyword Extraction Algorithm for Chinese Text based on Word Clustering. https://doi.org/10.1145/3592793
+
+ZHANG, C., ZHAO, L., & WU, C. (2010). Method of Chinese word segmentation based on character-word classification. https://doi.org/10.3724/sp.j.1087.2010.02034
+
+SONG, Y., CAI, D., ZHANG, G., & ZHAO, H. (2009). Approach to Chinese Word Segmentation Based on Character-Word Joint Decoding. https://doi.org/10.3724/sp.j.1001.2009.03606
+
+Chen, L. (2023). An Improved Corpus-Based NLP Method for Facilitating Keyword Extraction: An Example of the COVID-19 Vaccine Hesitancy Corpus. https://doi.org/10.3390/su15043402
+
+WANG, X. (2013). Quantitative analysis of effective range of context in Chinese word segmentation based on word-position tagging. https://doi.org/10.3724/sp.j.1087.2012.01340
+
+Hendrickx, I. (2009). What's In A Word-List? Investigating Word Frequency and Keyword Extraction. Dawn Archer (ed.).. https://doi.org/10.1093/llc/fqp041
+
+Yadav, R., & Raheman, H. (2025). Machine learning-based estimation of agricultural tyre sinkage: A streamlit web application. https://doi.org/10.1016/j.jterra.2025.101055
+
+S.P., R., M., S., & R., J. (2025). Streamlit-based Web Application for Parkinson's Detection using Machine Learning. https://doi.org/10.36548/jaicn.2024.4.006
+
+Sapkota, R. K., Adhikari, N., Subedi, C., Jha, R., & Subedi, M. (2025). Web Application Prototype on Air Quality Index Prediction, Monitoring, and Information Dissemination System: Machine Learning and Python-Streamlit-based Application Tailored for Kathmandu Metropolitan City. https://doi.org/10.3126/jes.v11i1.80600
+
+Tegar, A. T. B. S., Hasanah, H., & Oktaviani, I. (2025). Predicting Social Media Addiction Using Machine Learning and Interactive Visualization with Streamlit. https://doi.org/10.32877/bt.v8i1.2715
+
+Aendikov, N., & Azayeva, A. (2024). Integration of GIS and machine learning analytics into Streamlit application. https://doi.org/10.1016/j.procs.2023.12.160
+
+Santos, R., Sant’anna, A., Machado, L., Santos, L., & Soussa, M. (2026). Web-Based Application for Assessment of Physical Exercises using Machine Learning. https://doi.org/10.5753/jis.2026.6417
+
+Susilowati, K. D. S., Kusmintarti, A., Riwajanti, N. I., & Gultom, E. A. (2025). Integrating Streamlit, Facebook prophet, and machine learning models to create an interactive stock price and risk prediction dashboard. https://doi.org/10.55214/2576-8484.v9i11.11246
+
+Kundu, S., & Maulik, U. (2021). Cloud deployment of game theoretic categorical clustering using apache spark: An application to car recommendation. https://doi.org/10.1016/j.mlwa.2021.100100
+
+Savyanavar, P. A., & Mehta, B. (2016). Multi-Document Summarization Using TF-IDF Algorithm.. https://doi.org/10.18535/ijecs/v5i4.40
+
+Faiq, A. I., Sanjaya, M. R. S., Indah, D. R., & Ruskan, E. L. (2026). HYBRID FINE-TUNING INDOBERT DAN  HYBRID FINE-TUNING INDOBERT DAN ENSEMBLE TF-IDF LOGISTIC REGRESSION UNTUK ANALISIS SENTIMEN ULASAN APLIKASI ZALORA. https://doi.org/10.36341/rabit.v11i1.6924
+
+Whissell, J. S., & Clarke, C. L. A. (2011). Improving document clustering using Okapi BM25 feature weighting. https://doi.org/10.1007/s10791-011-9163-y
+
+Aprilio, P., Felix, M., Nugraha, P. S., & Fahmi, H. (2025). Hybrid Feature Combination of TF-IDF and BERT for Enhanced Information Retrieval Accuracy. https://doi.org/10.31326/jisa.v8i1.2179
+
+Christian, H., Agus, M. P., & Suhartono, D. (2016). Single Document Automatic Text Summarization using Term Frequency-Inverse Document Frequency (TF-IDF). https://doi.org/10.21512/comtech.v7i4.3746
+
+Robertson, S., & Zaragoza, H. (2009). The Probabilistic Relevance Framework: BM25 and Beyond. https://doi.org/10.1561/1500000019
+
+Jena, D., Rautaray, J., & Mishra, P. (2025). Summarization of Document using Feature Selection Method: TF-IDF. https://doi.org/10.5120/icaidsc202409
+
+Fan, C., Chen, W., & Wu, Y. (2022). Knowledge base question answering via path matching. https://doi.org/10.1016/j.knosys.2022.109857
+
+Mansoori, M. (2012). Boosting Passage Retrieval through Reuse in Question Answering. https://doi.org/10.5829/idosi.ije.2012.25.03c.02
+
+Yerragunta, S., Prasath, R., & Girish, G. (2026). Enhancing knowledge-based question answering with dense passage retrieval-based scaled momentum contrastive learning. https://doi.org/10.1016/j.eswa.2025.129025
+
+Cao, J., & Cao, J. (2024). CPEQA: A Large Language Model Based Knowledge Base Retrieval System for Chinese Confidentiality Knowledge Question Answering. https://doi.org/10.3390/electronics13214195
+
+Li, H., Feng, Y., & Liu, L. (2025). Fusing Essential Text for Question Answering over Incomplete Knowledge Base. https://doi.org/10.3390/electronics14010161
+
+Bilotti, M. W. (2011). Linguistic and semantic passage retrieval strategies for question answering. https://doi.org/10.1145/1924475.1924495
+
+Othman, N., & Faiz, R. (2016). Question Answering Passage Retrieval and Re-ranking Using N-grams and SVM. https://doi.org/10.13053/cys-20-3-2470
+
+Galitsky, B. (2017). Matching parse thickets for open domain question answering. https://doi.org/10.1016/j.datak.2016.11.002
+
+Lan, Y., Wang, S., & Jiang, J. (2019). Knowledge Base Question Answering With a Matching-Aggregation Model and Question-Specific Contextual Relations. https://doi.org/10.1109/taslp.2019.2926125
+
+Prager, J. (2007). Open-Domain Question–Answering. https://doi.org/10.1561/1500000001
+
+Yanagi, R., Togo, R., Ogawa, T., & Haseyama, M. (2023). Recallable Question Answering-Based Re-Ranking Considering Semantic Region for Cross-Modal Retrieval. https://doi.org/10.1109/ojsp.2023.3238280
+
+Siriwardhana, S., Weerasekera, R., Wen, E., Kaluarachchi, T., & Rana, R. (2023). Improving the Domain Adaptation of Retrieval Augmented Generation (RAG) Models for Open Domain Question Answering. https://doi.org/10.1162/tacl_a_00530
+
+Fan, C., Yan, Z., Wu, Y., & Qian, B. (2023). Span prompt dense passage retrieval for Chinese open domain question answering. https://doi.org/10.3233/jifs-231328
+
+Kang, B., Kim, Y., & Shin, Y. (2023). An Efficient Document Retrieval for Korean Open-Domain Question Answering Based on ColBERT. https://doi.org/10.3390/app132413177
+
+Myers, T. (2001). Lyotard and Lacan answering the question: what does Postmodernism want?. https://doi.org/10.3366/jsp.2001.24.1.84
+
+Paşca, M. (2003). Open-Domain Question Answering from Large Text Collections. https://doi.org/10.1162/089120103322753383
+
