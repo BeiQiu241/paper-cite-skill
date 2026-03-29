@@ -82,17 +82,19 @@ Rules:
         messages=[{"role": "user", "content": user_prompt}],
     )
 
-    # 提取文本内容（取所有 text block 拼接，防止 thinking 模式只返回非 text block）
+    # 提取文本内容
     text_content = "".join(
         block.text for block in response.content if block.type == "text"
     )
 
-    # 解析 JSON（复用健壮解析函数）
-    from modules.citation_locator import _parse_json_array
-    import re as _re
+    if not text_content.strip():
+        raise RuntimeError(
+            "[LLM] 论文分析失败：模型未返回任何文本内容（可能是 API 或模型配置问题）"
+        )
 
-    text_stripped = text_content.strip()
     # 去除 markdown 代码块
+    import re as _re
+    text_stripped = text_content.strip()
     if text_stripped.startswith("```"):
         text_stripped = _re.sub(r"^```[a-z]*\n?", "", text_stripped)
         text_stripped = _re.sub(r"\n?```$", "", text_stripped.strip()).strip()
@@ -100,15 +102,18 @@ Rules:
     try:
         result = json.loads(text_stripped)
     except (json.JSONDecodeError, ValueError) as e:
-        print(f"  [LLM] JSON 解析失败: {e}，使用默认结构")
-        result = {
-            "field": "Unknown",
-            "keywords": [],
-            "summary": text_content[:300] if text_content else "",
-            "core_problem": "",
-            "methods": [],
-            "search_queries": [],
-        }
+        raise RuntimeError(
+            f"[LLM] 论文分析失败：JSON 解析错误 — {e}\n"
+            f"模型原始输出：\n{text_content[:500]}"
+        ) from e
+
+    # 校验必要字段
+    for required in ("field", "keywords", "search_queries"):
+        if required not in result:
+            raise RuntimeError(
+                f"[LLM] 论文分析失败：返回 JSON 缺少必要字段 '{required}'\n"
+                f"实际返回：{list(result.keys())}"
+            )
 
     return result
 

@@ -1,51 +1,132 @@
-"""Word 标注模块：在文档中高亮标注需要引用的位置并添加批注。"""
+"""Word 标注模块：高亮段落并添加 Word 原生批注（边栏气泡）。"""
 
-from typing import List, Dict, Any, Optional
-import re
+from datetime import datetime, timezone
+from typing import List, Dict, Any
 
+import lxml.etree as etree
 from docx import Document
-from docx.shared import RGBColor
+from docx.opc.part import Part
+from docx.opc.packuri import PackURI
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-import lxml.etree as etree
+from docx.shared import RGBColor
 
+# ── Word XML 命名空间 ────────────────────────────────────────────────────────
 
-def _hex_to_rgb(hex_color: str) -> RGBColor:
-    """将 hex 颜色字符串转换为 RGBColor。"""
-    hex_color = hex_color.lstrip("#")
-    r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
-    return RGBColor(r, g, b)
+_W  = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+_W14 = 'http://schemas.microsoft.com/office/word/2010/wordml'
 
+_COMMENTS_CT  = ('application/vnd.openxmlformats-officedocument'
+                 '.wordprocessingml.comments+xml')
+_COMMENTS_REL = ('http://schemas.openxmlformats.org/officeDocument/2006/'
+                 'relationships/comments')
 
-# 高亮颜色映射（Word 支持有限的高亮颜色枚举）
 _HIGHLIGHT_MAP = {
-    "yellow": "yellow",
-    "green": "green",
-    "cyan": "cyan",
-    "magenta": "magenta",
-    "blue": "blue",
-    "red": "red",
+    "yellow": "yellow", "green": "green", "cyan": "cyan",
+    "magenta": "magenta", "blue": "blue", "red": "red",
 }
 
 
-def _add_highlight_to_run(run, color: str = "yellow"):
-    """为 run 添加高亮颜色。"""
-    rPr = run._r.get_or_add_rPr()
-    highlight = OxmlElement("w:highlight")
-    highlight.set(qn("w:val"), _HIGHLIGHT_MAP.get(color, "yellow"))
-    rPr.append(highlight)
+def _w(tag: str) -> str:
+    return f'{{{_W}}}{tag}'
 
 
-def _add_comment_to_paragraph(para, comment_text: str, author: str = "paper-cite-agent"):
-    """在段落末尾添加批注（Word XML 批注）。"""
-    # 简化版：在段落末尾插入括号形式的内联标注
-    # 完整 XML 批注实现需要操作 document.xml 的 comments 部分，较为复杂
-    # 此处使用方括号批注作为替代，兼容性更好
-    run = para.add_run(f"  【建议引用：{comment_text}】")
-    run.font.color.rgb = RGBColor(0x80, 0x80, 0x80)
-    run.font.italic = True
-    run.font.size = None  # 继承段落字号
+# ── 高亮 ─────────────────────────────────────────────────────────────────────
 
+def _highlight_para(para, color: str = "yellow"):
+    """高亮段落中的所有 run。"""
+    val = _HIGHLIGHT_MAP.get(color, "yellow")
+    for run in para.runs:
+        if run.text.strip():
+            rPr = run._r.get_or_add_rPr()
+            hl = OxmlElement("w:highlight")
+            hl.set(qn("w:val"), val)
+            rPr.append(hl)
+
+
+# ── Word 原生批注 ─────────────────────────────────────────────────────────────
+
+def _build_comments_xml(comments: List[Dict]) -> bytes:
+    """
+    构建 word/comments.xml 的完整 XML bytes。
+
+    comments: [{"id": int, "author": str, "text": str}, ...]
+    """
+    nsmap = {'w': _W}
+    root = etree.Element(_w('comments'), nsmap=nsmap)
+
+    date_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    for c in comments:
+        cmt = etree.SubElement(root, _w('comment'))
+        cmt.set(_w('id'),     str(c['id']))
+        cmt.set(_w('author'), c.get('author', 'paper-cite-agent'))
+        cmt.set(_w('date'),   date_str)
+
+        p = etree.SubElement(cmt, _w('p'))
+
+        # 段落样式
+        pPr = etree.SubElement(p, _w('pPr'))
+        pStyle = etree.SubElement(pPr, _w('pStyle'))
+        pStyle.set(_w('val'), 'CommentText')
+
+        # 批注编号 run（Word 规范要求）
+        r0 = etree.SubElement(p, _w('r'))
+        r0Pr = etree.SubElement(r0, _w('rPr'))
+        r0Style = etree.SubElement(r0Pr, _w('rStyle'))
+        r0Style.set(_w('val'), 'CommentReference')
+        r0t = etree.SubElement(r0, _w('t'))
+        r0t.text = str(c['id'])
+
+        # 批注正文 run
+        r = etree.SubElement(p, _w('r'))
+        t = etree.SubElement(r, _w('t'))
+        t.text = c['text']
+        t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+
+    return etree.tostring(root, xml_declaration=True,
+                          encoding='UTF-8', standalone=True)
+
+
+def _attach_comments_part(doc, comments: List[Dict]):
+    """将 comments.xml 写入 docx 包并建立关联。"""
+    blob = _build_comments_xml(comments)
+    doc_part = doc.part
+    try:
+        # 已存在则替换 blob
+        cp = doc_part.part_related_by(_COMMENTS_REL)
+        cp._blob = blob
+    except KeyError:
+        cp = Part(PackURI('/word/comments.xml'), _COMMENTS_CT,
+                  blob, doc_part.package)
+        doc_part.relate_to(cp, _COMMENTS_REL)
+
+
+def _insert_comment_ref(para_xml, cid: int):
+    """在段落 XML 末尾插入 commentRangeStart/End 和 commentReference。"""
+    s = str(cid)
+
+    # commentRangeStart：插到 pPr 后面（若有），否则插到最前
+    cs = etree.Element(_w('commentRangeStart'))
+    cs.set(_w('id'), s)
+    pPr = para_xml.find(_w('pPr'))
+    pos = (list(para_xml).index(pPr) + 1) if pPr is not None else 0
+    para_xml.insert(pos, cs)
+
+    # commentRangeEnd
+    ce = etree.SubElement(para_xml, _w('commentRangeEnd'))
+    ce.set(_w('id'), s)
+
+    # commentReference run
+    ref_run = etree.SubElement(para_xml, _w('r'))
+    ref_rPr = etree.SubElement(ref_run, _w('rPr'))
+    ref_style = etree.SubElement(ref_rPr, _w('rStyle'))
+    ref_style.set(_w('val'), 'CommentReference')
+    ref = etree.SubElement(ref_run, _w('commentReference'))
+    ref.set(_w('id'), s)
+
+
+# ── 主入口 ────────────────────────────────────────────────────────────────────
 
 def annotate_docx(
     input_path: str,
@@ -54,85 +135,78 @@ def annotate_docx(
     ranked_papers: List[Dict[str, Any]],
     highlight_color: str = "yellow",
     add_comments: bool = True,
+    references: List[str] = None,
 ) -> str:
     """
-    在 Word 文档中标注引用位置。
+    在 Word 文档中：
+      1. 黄色高亮需要引用的段落原文
+      2. 段落末尾直接写入 GB/T 7714 格式引用（灰色斜体）
+      3. Word 原生批注气泡保留引用理由
 
-    - 高亮需要引用的段落
-    - 在段落末尾添加建议引用的文献信息
-
-    返回输出文件路径。
+    参数：
+        references: 已格式化的参考文献列表（与 ranked_papers 等长），
+                    用于在行内写入完整的格式化引用。若为 None 则退回旧格式。
     """
     doc = Document(input_path)
 
-    # 提取所有引用位置文本，切分为有意义的片段用于匹配
-    # 处理 merge_short_paragraphs 导致的合并文本问题
-    def _extract_match_fragments(text: str, min_len: int = 15) -> list:
-        """将文本切分为若干不重叠片段，每段可独立用于匹配。"""
-        fragments = []
-        # 按句号/换行切分
-        import re
-        parts = re.split(r'[。！？\n]', text)
-        for p in parts:
-            p = p.strip()
-            if len(p) >= min_len:
-                fragments.append(p[:80])
-        # 如果切不出片段，直接用前80字符
-        if not fragments and len(text) >= min_len:
-            fragments.append(text[:80])
-        return fragments
+    # ── 建立 paragraph_index → position_info 映射 ────────────
+    index_map: Dict[int, Dict] = {
+        pos['paragraph_index']: pos
+        for pos in citation_positions
+        if 'paragraph_index' in pos
+    }
 
-    citation_fragments: list = []
-    for pos in citation_positions:
-        for frag in _extract_match_fragments(pos.get("text", "")):
-            citation_fragments.append(frag)
+    # ── 遍历段落标注 ──────────────────────────────────────────
+    comments_to_add: List[Dict] = []
+    comment_id = 1
+    para_counter = 0
 
-    # 准备推荐文献的简短标签
-    paper_labels = []
-    for i, paper in enumerate(ranked_papers[:5], start=1):
-        authors = paper.get("authors", [])
-        first_author = authors[0].split()[-1] if authors else "Unknown"
-        year = paper.get("year", "n.d.")
-        label = f"{first_author} et al., {year}"
-        paper_labels.append(label)
-
-    recommendation = "；".join(paper_labels) if paper_labels else "见参考文献列表"
-
-    def _matches_any_fragment(para_text: str) -> bool:
-        """判断段落文本是否与任意引用片段匹配。"""
-        para_lower = para_text.lower()
-        for frag in citation_fragments:
-            frag_lower = frag.lower()
-            # 精确子串匹配
-            if frag_lower in para_lower:
-                return True
-            # 前缀匹配（应对轻微差异）
-            if para_lower.startswith(frag_lower[:40]) and len(frag_lower) >= 20:
-                return True
-        return False
-
-    # 遍历文档段落进行标注
-    annotated_count = 0
     for para in doc.paragraphs:
-        para_text = para.text.strip()
-        if not para_text or len(para_text) < 10:
+        if not para.text.strip():
+            continue
+        para_counter += 1
+
+        pos_info = index_map.get(para_counter)
+        if pos_info is None:
             continue
 
-        should_annotate = _matches_any_fragment(para_text)
+        # 1. 黄色高亮原文
+        _highlight_para(para, highlight_color)
 
-        if should_annotate:
-            # 高亮段落中的所有 run
-            for run in para.runs:
-                if run.text.strip():
-                    _add_highlight_to_run(run, highlight_color)
+        # 2. 构建引用标签（优先使用 GB/T 7714 格式化字符串）
+        cite_indices = pos_info.get('cite_indices') or []
+        labels = []
+        for idx in cite_indices:
+            if isinstance(idx, int):
+                if references and 0 <= idx < len(references):
+                    labels.append(references[idx])
+                elif 0 <= idx < len(ranked_papers):
+                    paper = ranked_papers[idx]
+                    year = str(paper.get('year', '') or 'n.d.')
+                    labels.append(f"({year}) {paper.get('title', '')}")
 
-            # 添加内联批注
-            if add_comments:
-                _add_comment_to_paragraph(para, recommendation)
+        cite_str = '；'.join(labels) if labels else '（见参考文献列表）'
 
-            annotated_count += 1
+        # 3. 在段落末尾内联写入引用文献（灰色斜体，不高亮，和正文区分）
+        cite_run = para.add_run(f"  {cite_str}")
+        cite_run.font.color.rgb = RGBColor(0x60, 0x60, 0x60)
+        cite_run.font.italic = True
 
-    print(f"  [Marker] 已标注 {annotated_count} 处引用位置")
+        # 4. 理由保留为 Word 原生批注气泡（优先使用 LLM 审查理由）
+        reason = pos_info.get('review_reason') or pos_info.get('reason', '')
+        if add_comments and reason:
+            comments_to_add.append({
+                'id': comment_id,
+                'author': 'paper-cite-agent',
+                'text': f"引用理由：{reason}",
+            })
+            _insert_comment_ref(para._p, comment_id)
+            comment_id += 1
 
+    # ── 将 comments.xml 写入 docx 包 ─────────────────────────
+    if comments_to_add:
+        _attach_comments_part(doc, comments_to_add)
+
+    print(f"  [Marker] 已标注 {para_counter} 段，引用位置 {len(index_map)} 处")
     doc.save(output_path)
     return output_path

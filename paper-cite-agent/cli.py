@@ -37,22 +37,17 @@ def main(
         "--output", "-o",
         help="输出目录（默认与输入文件相同目录）",
     ),
-    use_rule_citation: bool = typer.Option(
-        False,
-        "--rule-citation",
-        help="使用规则匹配识别引用位置（不调用 LLM，速度更快）",
-    ),
     cn_count: int = typer.Option(
-        3,
+        5,
         "--cn",
-        help="推荐中国机构/中文文献数量（默认 3）",
+        help="推荐中文文献数量（默认 5）",
         min=0,
         max=20,
     ),
     en_count: int = typer.Option(
-        2,
+        5,
         "--en",
-        help="推荐英文文献数量（默认 2）",
+        help="推荐英文文献数量（默认 5）",
         min=0,
         max=20,
     ),
@@ -68,7 +63,7 @@ def main(
     示例：
         paper-cite-agent thesis.docx
         paper-cite-agent thesis.docx --cn 4 --en 3 --format IEEE
-        paper-cite-agent thesis.docx --rule-citation --output ./output
+        paper-cite-agent thesis.docx --output ./output
     """
     from main import run_pipeline, load_config
     import yaml
@@ -93,7 +88,6 @@ def main(
         result = run_pipeline(
             docx_path=str(docx_file),
             config_path=tmp_config,
-            use_llm_citation=not use_rule_citation,
             output_dir=str(output_dir) if output_dir else None,
             cn_count=cn_count,
             en_count=en_count,

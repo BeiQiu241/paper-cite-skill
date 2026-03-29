@@ -1,19 +1,19 @@
 """
 学术文献检索模块。
 
-可用免费数据源及策略：
+数据源（均为官方 API，无爬虫）：
   Crossref          → 英文期刊（按相关度，过滤 journal-article）
-  Semantic Scholar  → 英文为主，少量中文
-  OpenAlex          → 英文为主；用 institutions.country_code:cn 筛出中国机构论文
-
-注意：知网/万方/维普均无免费公开 API，本模块会在结尾打印建议的知网搜索词。
+  Semantic Scholar  → 英文为主，支持中文查询，含引用数/摘要/PDF
+  OpenAlex          → 英文/中文；institutions.country_code:cn 筛中国机构论文
+  arXiv             → 预印本/最新论文（Atom XML API，无需 Key）
 """
 
 import time
 import re
+import xml.etree.ElementTree as _ET
 from typing import List, Dict, Any, Optional
 
-from utils.api_client import get_with_retry
+from utils.api_client import get_with_retry, get_text_with_retry
 
 
 # ─── Crossref ─────────────────────────────────────────────────────────────────
@@ -27,7 +27,8 @@ def search_crossref(query: str, rows: int = 10,
     params = {
         "query": query,
         "rows": rows * 3,
-        "select": "DOI,title,author,published,abstract,is-referenced-by-count,URL",
+        "select": ("DOI,title,author,published,abstract,is-referenced-by-count,"
+                   "URL,container-title,volume,issue,page"),
         "sort": "relevance",
         "filter": "type:journal-article,from-pub-date:2000",
     }
@@ -60,6 +61,10 @@ def search_crossref(query: str, rows: int = 10,
             "url": item.get("URL", f"https://doi.org/{doi}" if doi else ""),
             "abstract": item.get("abstract", ""),
             "citations": item.get("is-referenced-by-count", 0),
+            "journal": (item.get("container-title") or [""])[0],
+            "volume": item.get("volume", ""),
+            "issue": item.get("issue", ""),
+            "pages": item.get("page", ""),
             "source": "crossref", "lang": "en",
         })
     return results
@@ -73,7 +78,8 @@ SS_BASE = "https://api.semanticscholar.org/graph/v1/paper/search"
 def search_semantic_scholar(query: str, limit: int = 10) -> List[Dict[str, Any]]:
     params = {
         "query": query, "limit": limit,
-        "fields": "title,authors,year,externalIds,abstract,citationCount,openAccessPdf",
+        "fields": ("title,authors,year,externalIds,abstract,citationCount,"
+                   "openAccessPdf,journal"),
     }
     data = get_with_retry(SS_BASE, params=params)
     if not data:
@@ -93,11 +99,16 @@ def search_semantic_scholar(query: str, limit: int = 10) -> List[Dict[str, Any]]
                f"https://arxiv.org/abs/{arxiv}" if arxiv else "")
         pdf_url = (item.get("openAccessPdf") or {}).get("url", "")
         lang = "zh" if re.search(r'[\u4e00-\u9fff]', title) else "en"
+        journal_obj = item.get("journal") or {}
         results.append({
             "title": title, "authors": authors, "year": year,
             "doi": doi, "url": url, "pdf_url": pdf_url,
             "abstract": item.get("abstract", "") or "",
             "citations": item.get("citationCount", 0) or 0,
+            "journal": journal_obj.get("name", ""),
+            "volume": journal_obj.get("volume", ""),
+            "issue": "",
+            "pages": journal_obj.get("pages", ""),
             "source": "semantic_scholar", "lang": lang,
         })
     return results
@@ -121,24 +132,9 @@ def _reconstruct_abstract(inv: Optional[Dict]) -> str:
         return ""
 
 
-def search_openalex(query: str, limit: int = 10,
-                    cn_only: bool = False) -> List[Dict[str, Any]]:
-    """
-    搜索 OpenAlex。
-    cn_only=True 时追加 institutions.country_code:cn 过滤，
-    返回中国机构发表的论文（通常为英文，但主题与中国研究紧密相关）。
-    """
-    params = {
-        "search": query,
-        "per_page": min(limit * 2, 50),
-        "select": ("id,title,authorships,publication_year,doi,"
-                   "abstract_inverted_index,cited_by_count,language,"
-                   "open_access,primary_location"),
-        "sort": "relevance_score:desc",
-    }
-    if cn_only:
-        params["filter"] = "institutions.country_code:cn"
-
+def _openalex_request(params: Dict, limit: int,
+                      source_tag: str) -> List[Dict[str, Any]]:
+    """OpenAlex 公共请求逻辑，提取带期刊元数据的结果。"""
     data = get_with_retry(OPENALEX_BASE, params=params,
                           headers={"User-Agent": "paper-cite-agent/1.0"})
     if not data:
@@ -158,18 +154,172 @@ def search_openalex(query: str, limit: int = 10,
                 authors.append(name)
         year = item.get("publication_year", 0) or 0
         doi = (item.get("doi") or "").replace("https://doi.org/", "")
-        url = f"https://doi.org/{doi}" if doi else (
-            (item.get("primary_location") or {}).get("landing_page_url", ""))
+        primary_loc = item.get("primary_location") or {}
+        url = (f"https://doi.org/{doi}" if doi else
+               primary_loc.get("landing_page_url", ""))
         abstract = _reconstruct_abstract(item.get("abstract_inverted_index"))
         lang = item.get("language", "en") or "en"
-        # 标记中国机构来源
-        source_tag = "openalex_cn" if cn_only else "openalex"
+
+        # 期刊元数据
+        source_info = primary_loc.get("source") or {}
+        journal = source_info.get("display_name", "")
+        biblio = item.get("biblio") or {}
+        volume = biblio.get("volume", "") or ""
+        issue = biblio.get("issue", "") or ""
+        first_page = biblio.get("first_page", "") or ""
+        last_page = biblio.get("last_page", "") or ""
+        pages = f"{first_page}–{last_page}" if first_page and last_page else first_page
+
         results.append({
             "title": title, "authors": authors, "year": year,
             "doi": doi, "url": url, "abstract": abstract,
             "citations": item.get("cited_by_count", 0) or 0,
+            "journal": journal, "volume": volume,
+            "issue": issue, "pages": pages,
             "source": source_tag, "lang": lang,
         })
+    return results
+
+
+def search_openalex(query: str, limit: int = 10,
+                    cn_only: bool = False) -> List[Dict[str, Any]]:
+    """
+    搜索 OpenAlex（英文为主）。
+    cn_only=True → 仅返回中国机构发表的论文（主要是英文国际期刊）。
+    """
+    params = {
+        "search": query,
+        "per_page": min(limit * 2, 50),
+        "select": ("id,title,authorships,publication_year,doi,"
+                   "abstract_inverted_index,cited_by_count,language,"
+                   "primary_location,biblio"),
+        "sort": "relevance_score:desc",
+    }
+    if cn_only:
+        params["filter"] = "institutions.country_code:cn"
+    source_tag = "openalex_cn" if cn_only else "openalex"
+    return _openalex_request(params, limit, source_tag)
+
+
+def search_openalex_zh(query: str, limit: int = 10) -> List[Dict[str, Any]]:
+    """
+    搜索 OpenAlex 中的中文语言论文（language:zh）。
+    返回真正的中文期刊论文，包含完整的期刊/卷期/页码信息。
+    查询词须为英文（OpenAlex search 不支持中文字符）。
+    """
+    params = {
+        "search": query,
+        "per_page": min(limit * 2, 50),
+        "filter": "language:zh",
+        "select": ("id,title,authorships,publication_year,doi,"
+                   "abstract_inverted_index,cited_by_count,language,"
+                   "primary_location,biblio"),
+        "sort": "relevance_score:desc",
+    }
+    return _openalex_request(params, limit, "openalex_zh")
+
+
+# ─── arXiv ────────────────────────────────────────────────────────────────────
+
+ARXIV_BASE = "http://export.arxiv.org/api/query"
+_ARXIV_NS = {
+    "atom":   "http://www.w3.org/2005/Atom",
+    "arxiv":  "http://arxiv.org/schemas/atom",
+}
+
+
+def search_arxiv(query: str, limit: int = 10) -> List[Dict[str, Any]]:
+    """
+    使用 arXiv 官方 Atom API 搜索预印本/已发表论文（无需 API Key）。
+    覆盖 CS、数学、物理、统计等学科，返回完整摘要与 PDF 链接。
+    查询词须为英文。
+    """
+    params = {
+        "search_query": f"all:{query}",
+        "start": 0,
+        "max_results": min(limit * 2, 50),
+        "sortBy": "relevance",
+        "sortOrder": "descending",
+    }
+    text = get_text_with_retry(ARXIV_BASE, params=params)
+    if not text:
+        return []
+
+    try:
+        root = _ET.fromstring(text)
+    except _ET.ParseError as e:
+        print(f"  [arXiv] XML 解析失败: {e}")
+        return []
+
+    results: List[Dict[str, Any]] = []
+    for entry in root.findall("atom:entry", _ARXIV_NS):
+        if len(results) >= limit:
+            break
+
+        title_el = entry.find("atom:title", _ARXIV_NS)
+        title = (title_el.text or "").strip().replace("\n", " ") if title_el is not None else ""
+        if not title:
+            continue
+
+        # 发布年份
+        pub_el = entry.find("atom:published", _ARXIV_NS)
+        year = 0
+        if pub_el is not None and pub_el.text:
+            try:
+                year = int(pub_el.text[:4])
+            except ValueError:
+                pass
+
+        # 作者列表
+        authors = []
+        for a in entry.findall("atom:author", _ARXIV_NS):
+            name_el = a.find("atom:name", _ARXIV_NS)
+            if name_el is not None and name_el.text:
+                authors.append(name_el.text.strip())
+        authors = authors[:6]
+
+        # 摘要
+        summary_el = entry.find("atom:summary", _ARXIV_NS)
+        abstract = (summary_el.text or "").strip().replace("\n", " ") if summary_el is not None else ""
+
+        # DOI（部分论文有）
+        doi_el = entry.find("arxiv:doi", _ARXIV_NS)
+        doi = (doi_el.text or "").strip() if doi_el is not None else ""
+
+        # arXiv 页面 URL
+        id_el = entry.find("atom:id", _ARXIV_NS)
+        arxiv_url = (id_el.text or "").strip() if id_el is not None else ""
+
+        # PDF URL
+        pdf_url = ""
+        for link in entry.findall("atom:link", _ARXIV_NS):
+            if link.get("type") == "application/pdf":
+                pdf_url = link.get("href", "")
+                break
+
+        # 期刊信息（已发表论文才有）
+        journal_el = entry.find("arxiv:journal_ref", _ARXIV_NS)
+        journal = (journal_el.text or "").strip() if journal_el is not None else ""
+
+        url = f"https://doi.org/{doi}" if doi else arxiv_url
+
+        results.append({
+            "title": title,
+            "authors": authors,
+            "year": year,
+            "doi": doi,
+            "url": url,
+            "pdf_url": pdf_url,
+            "abstract": abstract,
+            "citations": 0,
+            "journal": journal,
+            "volume": "",
+            "issue": "",
+            "pages": "",
+            "source": "arxiv",
+            "lang": "en",
+        })
+
     return results
 
 
@@ -267,13 +417,5 @@ def search_literature(
     cn_count = sum(1 for r in mixed if r.get("source", "").endswith("_cn")
                    or r.get("lang") == "zh")
     print(f"  [Search] 合并 {len(mixed)} 篇（中国机构/中文 {cn_count} 篇 / 其他 {len(mixed)-cn_count} 篇）")
-
-    # ── 打印知网建议搜索词 ────────────────────────────────────
-    if cn_queries:
-        print("\n  ┌─ 知网/万方手动搜索建议（免费 API 不可用）─────────────")
-        for q in cn_queries:
-            print(f"  │  {q}")
-        print("  │  → https://www.cnki.net/  |  https://www.wanfangdata.com.cn/")
-        print("  └───────────────────────────────────────────────────────\n")
 
     return mixed

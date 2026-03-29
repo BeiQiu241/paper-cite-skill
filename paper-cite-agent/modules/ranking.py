@@ -1,16 +1,21 @@
 """文献评分与筛选模块：对候选文献按相关度排序。"""
 
 import math
+import re
 from typing import List, Dict, Any, Optional
 
 from utils.embeddings import EmbeddingModel
 
 
+_CN_SOURCES = {"openalex_cn", "openalex_zh"}
+
+
 def _is_cn(paper: Dict[str, Any]) -> bool:
     """判断是否为中国机构/中文文献。"""
     return (
-        paper.get("source", "").endswith("_cn")
+        paper.get("source", "") in _CN_SOURCES
         or paper.get("lang") == "zh"
+        or bool(re.search(r'[\u4e00-\u9fff]', paper.get("title", "")))
     )
 
 

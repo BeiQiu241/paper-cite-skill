@@ -31,7 +31,6 @@ def clean_paragraphs(
     2. 删除页眉页脚
     3. 删除参考文献段落之后的内容
     4. 去除过短/重复段落
-    5. 重新编号
     """
     cleaned = []
     seen_texts = set()
@@ -65,10 +64,6 @@ def clean_paragraphs(
 
         cleaned.append(para)
 
-    # 重新编号
-    for i, para in enumerate(cleaned, start=1):
-        para["index"] = i
-
     return cleaned
 
 
@@ -101,9 +96,5 @@ def merge_short_paragraphs(
 
     if buffer:
         merged.append(buffer)
-
-    # 重新编号
-    for i, para in enumerate(merged, start=1):
-        para["index"] = i
 
     return merged

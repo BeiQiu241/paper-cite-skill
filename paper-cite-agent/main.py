@@ -16,15 +16,43 @@ from modules.docx_reader import read_docx, get_full_text
 from modules.text_cleaner import clean_paragraphs, merge_short_paragraphs
 from modules.paper_analyzer import analyze_paper, extract_abstract
 from modules.llm_search import llm_search_literature
-from modules.ranking import score_literature
-from modules.citation_locator import locate_citation_positions_llm, locate_citation_positions_rule
+from modules.llm_ranker import llm_review_literature
+from modules.citation_locator import locate_citation_positions_llm
 from modules.docx_marker import annotate_docx
 from modules.reference_formatter import (
     generate_reference_list,
     save_references_txt,
     append_references_to_docx,
 )
-from utils.embeddings import EmbeddingModel
+
+
+def _next_available_path(path: Path) -> Path:
+    """Return a non-conflicting sibling path: name_1.ext, name_2.ext, ..."""
+    if not path.exists():
+        return path
+    stem = path.stem
+    suffix = path.suffix
+    parent = path.parent
+    i = 1
+    while True:
+        candidate = parent / f"{stem}_{i}{suffix}"
+        if not candidate.exists():
+            return candidate
+        i += 1
+
+
+def _copy_with_fallback(src: Path, preferred_dst: Path) -> Path:
+    """Copy file, and if destination is locked, retry with a new filename."""
+    import shutil
+
+    try:
+        shutil.copy(str(src), str(preferred_dst))
+        return preferred_dst
+    except PermissionError:
+        alt = _next_available_path(preferred_dst)
+        print(f"  [IO] 目标文件被占用，改为写入: {alt.name}")
+        shutil.copy(str(src), str(alt))
+        return alt
 
 
 def load_config(config_path: Optional[str] = None) -> dict:
@@ -41,7 +69,6 @@ def load_config(config_path: Optional[str] = None) -> dict:
 def run_pipeline(
     docx_path: str,
     config_path: Optional[str] = None,
-    use_llm_citation: bool = True,
     output_dir: Optional[str] = None,
     cn_count: Optional[int] = None,
     en_count: Optional[int] = None,
@@ -52,32 +79,38 @@ def run_pipeline(
     参数：
         docx_path: 输入 Word 文件路径
         config_path: 配置文件路径（可选）
-        use_llm_citation: 是否使用 LLM 识别引用位置（True）或规则匹配（False）
         output_dir: 输出目录（默认与输入文件同目录）
 
     返回结果字典。
     """
     cfg = load_config(config_path)
-    anthropic_cfg = cfg.get("anthropic", {})
     env_cfg = cfg.get("env", {})
     search_cfg = cfg.get("search", {})
     ranking_cfg = cfg.get("ranking", {})
     annotation_cfg = cfg.get("annotation", {})
     output_cfg = cfg.get("output", {})
 
-    model = anthropic_cfg.get("model", "claude-opus-4-6")
+    # ── 模型提供商配置 ────────────────────────────────────────
+    provider_name = cfg.get("model_provider", "")
+    provider_cfg = cfg.get("model_providers", {}).get(provider_name, {})
+    model = cfg.get("model", "claude-opus-4-6")
+    base_url = (
+        provider_cfg.get("base_url")
+        or env_cfg.get("ANTHROPIC_BASE_URL")
+        or os.environ.get("ANTHROPIC_BASE_URL")
+        or None
+    )
+
+    # API Key：优先读 OPENAI_API_KEY（linkapi 使用 OpenAI 鉴权），其次 Anthropic
     api_key = (
-        anthropic_cfg.get("api_key")
+        env_cfg.get("OPENAI_API_KEY")
+        or os.environ.get("OPENAI_API_KEY")
         or env_cfg.get("ANTHROPIC_AUTH_TOKEN")
         or env_cfg.get("ANTHROPIC_API_KEY")
         or os.environ.get("ANTHROPIC_AUTH_TOKEN")
         or os.environ.get("ANTHROPIC_API_KEY")
     )
-    base_url = (
-        env_cfg.get("ANTHROPIC_BASE_URL")
-        or os.environ.get("ANTHROPIC_BASE_URL")
-        or None
-    )
+
     timeout_raw = (
         env_cfg.get("API_TIMEOUT_MS")
         or os.environ.get("API_TIMEOUT_MS")
@@ -88,12 +121,20 @@ def run_pipeline(
     except (TypeError, ValueError):
         timeout_ms = None
 
-    # 统一设置环境变量，兼容 Anthropic SDK 默认读取逻辑。
+    # 统一写入环境变量，供各子模块 SDK 读取
     if api_key:
+        os.environ["OPENAI_API_KEY"] = api_key
         os.environ["ANTHROPIC_API_KEY"] = api_key
         os.environ["ANTHROPIC_AUTH_TOKEN"] = api_key
     if base_url:
         os.environ["ANTHROPIC_BASE_URL"] = base_url
+
+    # 检测是否为 OpenAI 兼容接口（tool calling 使用 OpenAI function calling 格式）
+    openai_compat = bool(provider_cfg.get("requires_openai_auth") or provider_cfg.get("wire_api"))
+
+    if provider_name:
+        print(f"  [Config] 模型提供商: {provider_name} | 模型: {model} | Base URL: {base_url}")
+        print(f"  [Config] OpenAI 兼容模式: {'开启' if openai_compat else '关闭'}")
 
     input_path = Path(docx_path)
     if output_dir:
@@ -157,60 +198,38 @@ def run_pipeline(
         timeout_ms=timeout_ms,
         target_papers=max(target_papers, 24),
         crossref_email=cr_email or None,
+        openai_compat=openai_compat,
     )
 
-    # ── 步骤 5：文献排序与过滤 ────────────────────────────────
-    print("\n▶ [5/8] 文献排序与筛选...")
-    embedding_model = EmbeddingModel()
-    top_k = ranking_cfg.get("top_k", 5)
-    threshold = ranking_cfg.get("similarity_threshold", 0.1)
+    # ── 步骤 5：LLM 审查与筛选 ───────────────────────────────────
+    print("\n▶ [5/8] LLM 审查候选文献...")
 
-    # cn_count / en_count：CLI 参数优先，其次 config，最后按 top_k 各取一半
-    _cn = cn_count if cn_count is not None else ranking_cfg.get("cn_count")
-    _en = en_count if en_count is not None else ranking_cfg.get("en_count")
-    if _cn is None and _en is None:
-        # 兼容旧配置：top_k 中约 55% 中文
-        _cn = round(top_k * 0.55)
-        _en = top_k - _cn
+    _cn = cn_count if cn_count is not None else ranking_cfg.get("cn_count", 5)
+    _en = en_count if en_count is not None else ranking_cfg.get("en_count", 5)
 
-    ranked = score_literature(
-        candidates,
-        analysis,
-        top_k=top_k,
+    ranked = llm_review_literature(
+        candidates=candidates,
+        paper_analysis=analysis,
         cn_count=_cn,
         en_count=_en,
-        similarity_threshold=threshold,
-        embedding_model=embedding_model,
+        model=model,
+        api_key=api_key,
+        base_url=base_url,
+        timeout_ms=timeout_ms,
     )
-
-    if not ranked:
-        print("  ⚠ 未找到相关文献，建议检查关键词或网络连接")
-        ranked = candidates[:top_k] if candidates else []
-
-    cn_rec = sum(1 for p in ranked if p.get("source", "").endswith("_cn") or p.get("lang") == "zh")
-    print(f"  筛选出 {len(ranked)} 篇推荐文献（中国机构/中文 {cn_rec} 篇 / 英文 {len(ranked)-cn_rec} 篇）：")
-    for i, paper in enumerate(ranked, 1):
-        score = paper.get("_score", 0)
-        year = paper.get("year", "n.d.")
-        lang_tag = "[中]" if paper.get("source", "").endswith("_cn") or paper.get("lang") == "zh" else "[EN]"
-        print(f"  {i}. {lang_tag} [{score:.3f}] ({year}) {paper['title'][:65]}")
+    ref_format = output_cfg.get("reference_format", "GBT7714")
+    references = generate_reference_list(ranked, fmt=ref_format)
 
     # ── 步骤 6：引用位置识别 ──────────────────────────────────
-    print("\n▶ [6/8] 识别引用位置...")
-    if use_llm_citation:
-        try:
-            citation_positions = locate_citation_positions_llm(
-                cleaned,
-                model=model,
-                api_key=api_key,
-                base_url=base_url,
-                timeout_ms=timeout_ms,
-            )
-        except Exception as e:
-            print(f"  LLM 引用识别失败: {e}，回退到规则匹配")
-            citation_positions = locate_citation_positions_rule(cleaned)
-    else:
-        citation_positions = locate_citation_positions_rule(cleaned)
+    print("\n▶ [6/8] 识别引用位置（LLM）...")
+    citation_positions = locate_citation_positions_llm(
+        paragraphs=cleaned,
+        ranked_papers=ranked,
+        model=model,
+        api_key=api_key,
+        base_url=base_url,
+        timeout_ms=timeout_ms,
+    )
 
     print(f"  找到 {len(citation_positions)} 处需要引用的位置")
 
@@ -218,7 +237,6 @@ def run_pipeline(
     print("\n▶ [7/8] 标注 Word 文档...")
     highlight_color = annotation_cfg.get("highlight_color", "yellow")
     add_comments = annotation_cfg.get("add_comments", True)
-
     try:
         annotate_docx(
             input_path=str(input_path),
@@ -227,25 +245,48 @@ def run_pipeline(
             ranked_papers=ranked,
             highlight_color=highlight_color,
             add_comments=add_comments,
+            references=references,
         )
+    except PermissionError:
+        alt_annotated = _next_available_path(annotated_path)
+        print(f"  [IO] ????????????: {alt_annotated.name}")
+        annotate_docx(
+            input_path=str(input_path),
+            output_path=str(alt_annotated),
+            citation_positions=citation_positions,
+            ranked_papers=ranked,
+            highlight_color=highlight_color,
+            add_comments=add_comments,
+            references=references,
+        )
+        annotated_path = alt_annotated
     except Exception as e:
-        print(f"  ⚠ 标注失败: {e}")
-        import shutil
-        shutil.copy(str(input_path), str(annotated_path))
+        print(f"  ? ????: {e}")
+        annotated_path = _copy_with_fallback(input_path, annotated_path)
 
     # ── 步骤 8：生成参考文献列表 ──────────────────────────────
     print("\n▶ [8/8] 生成参考文献列表...")
-    ref_format = output_cfg.get("reference_format", "APA")
-    references = generate_reference_list(ranked, fmt=ref_format)
-
     if output_cfg.get("save_references_txt", True):
-        # 对全部候选也评分（用于排序输出），score 已在 ranked 里；candidates 没有 _score
-        save_references_txt(
-            references,
-            str(references_path),
-            all_candidates=candidates,
-            fmt=ref_format,
-        )
+        # ?????????????????score ?? ranked ??candidates ?? _score
+        try:
+            save_references_txt(
+                references,
+                str(references_path),
+                all_candidates=candidates,
+                selected_papers=ranked,
+                fmt=ref_format,
+            )
+        except PermissionError:
+            alt_refs = _next_available_path(references_path)
+            print(f"  [IO] ??????????????: {alt_refs.name}")
+            save_references_txt(
+                references,
+                str(alt_refs),
+                all_candidates=candidates,
+                selected_papers=ranked,
+                fmt=ref_format,
+            )
+            references_path = alt_refs
 
     if output_cfg.get("write_to_docx", True) and ranked:
         try:
@@ -255,13 +296,21 @@ def run_pipeline(
                 references=references,
                 papers=ranked,
             )
+        except PermissionError:
+            alt_final = _next_available_path(final_path)
+            print(f"  [IO] ????????????: {alt_final.name}")
+            append_references_to_docx(
+                doc_path=str(annotated_path),
+                output_path=str(alt_final),
+                references=references,
+                papers=ranked,
+            )
+            final_path = alt_final
         except Exception as e:
-            print(f"  ⚠ 写入 Word 失败: {e}")
-            import shutil
-            shutil.copy(str(annotated_path), str(final_path))
+            print(f"  ? ?? Word ??: {e}")
+            final_path = _copy_with_fallback(annotated_path, final_path)
     else:
-        import shutil
-        shutil.copy(str(annotated_path), str(final_path))
+        final_path = _copy_with_fallback(annotated_path, final_path)
 
     # ── 完成 ───────────────────────────────────────────────────
     print(f"\n{'='*60}")
@@ -269,7 +318,14 @@ def run_pipeline(
     print(f"\n  📄 标注文档: {annotated_path.name}")
     print(f"  📋 参考文献: {references_path.name}")
     print(f"  📝 最终文档: {final_path.name}")
-    print(f"\n  推荐参考文献列表 ({ref_format})：")
+    cn_reviewed = sum(
+        1 for p in ranked
+        if p.get("source", "").endswith("_cn") or p.get("lang") == "zh"
+    )
+    en_reviewed = len(ranked) - cn_reviewed
+    print(
+        f"\n  [LLM审查] 选出 {len(ranked)} 篇（中文 {cn_reviewed} 篇 / 英文 {en_reviewed} 篇）"
+    )
     for ref in references:
         print(f"  • {ref}")
     print(f"{'='*60}\n")
