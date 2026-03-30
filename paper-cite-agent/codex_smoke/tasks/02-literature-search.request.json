@@ -1,0 +1,66 @@
+{
+  "task_type": "literature_search",
+  "instructions": [
+    "Search for candidate academic references related to the target paper.",
+    "Use available Codex search or browsing capabilities instead of external model APIs.",
+    "Return JSON only."
+  ],
+  "response_schema": {
+    "type": "object",
+    "required": [
+      "candidates"
+    ]
+  },
+  "response_example": {
+    "search_summary": "Short summary of search coverage.",
+    "candidates": [
+      {
+        "title": "Paper title",
+        "year": 2024,
+        "journal": "Journal or conference",
+        "abstract": "Short abstract",
+        "authors": [
+          "Author A",
+          "Author B"
+        ],
+        "doi": "10.xxxx/xxxx",
+        "url": "https://example.com/paper",
+        "source": "openalex",
+        "lang": "en",
+        "citations": 10
+      }
+    ]
+  },
+  "input": {
+    "paper_analysis": {
+      "field": "Computer Vision",
+      "field_zh": "?????",
+      "keywords": [
+        "Chinese herbal medicine recognition",
+        "deep learning",
+        "transfer learning"
+      ],
+      "keywords_zh": [
+        "?????",
+        "????",
+        "????"
+      ],
+      "summary": "Smoke test analysis.",
+      "core_problem": "Recognize Chinese herbal medicine images.",
+      "methods": [
+        "EfficientNet-B3",
+        "transfer learning"
+      ],
+      "search_queries": [
+        "Chinese herbal medicine image recognition deep learning"
+      ],
+      "search_queries_zh": [
+        "??? ???? ????"
+      ]
+    },
+    "target_papers": 40,
+    "crossref_email": ""
+  },
+  "step": "02-literature-search",
+  "expected_response_path": "D:\\py projects\\paper-agent\\paper-cite-agent\\codex_smoke\\tasks\\02-literature-search.response.json"
+}

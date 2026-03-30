@@ -1,0 +1,51 @@
+{
+  "task_type": "paper_analysis",
+  "instructions": [
+    "Analyze the academic paper excerpt and return JSON only.",
+    "Infer the research field, bilingual keywords, summary, methods, and search queries.",
+    "Keep `search_queries` in English and `search_queries_zh` in Chinese academic wording."
+  ],
+  "response_schema": {
+    "type": "object",
+    "required": [
+      "field",
+      "keywords",
+      "search_queries"
+    ]
+  },
+  "response_example": {
+    "field": "Computer Vision",
+    "field_zh": "计算机视觉",
+    "keywords": [
+      "keyword1",
+      "keyword2",
+      "keyword3"
+    ],
+    "keywords_zh": [
+      "关键词1",
+      "关键词2",
+      "关键词3"
+    ],
+    "summary": "2-3 sentence summary.",
+    "core_problem": "Main research problem.",
+    "methods": [
+      "method1",
+      "method2"
+    ],
+    "search_queries": [
+      "English query 1",
+      "English query 2",
+      "English query 3"
+    ],
+    "search_queries_zh": [
+      "中文检索词1",
+      "中文检索词2",
+      "中文检索词3"
+    ]
+  },
+  "input": {
+    "text_excerpt": "课程设计题目：基于深度学习的中草药识别系统 学    号：    2215925731 为解决传统中草药识别效率低、依赖人工经验且易出错的问题，本文基于深度学习技术设计了一种中草药智能识别系统。系统采用 EfficientNet-B3 模型作为特征提取网络，通过迁移学习对中草药图像数据集进行训练，实现高精度分类识别；同时构建药性与功效知识库模块，实现识别结果与中药药理信息的自动关联与展示。实验结果表明，该模型在智慧岐黄中草药数据集上的识别准确率达到 98.9%，较传统的 ResNet50 模型提升约 0.8%，验证了模型的有效性与优越性。该系统不仅提高了中草药识别的自动化与智能化水平，也为中医药数字化与智能诊断提供了可行的技术支持。\n\n中草药识别；深度学习；EfficientNet；图像分类；知识库 TP391.41　　            文献标志码: A\n\nDesign and Implementation of a Chinese Herbal Medicine Recognition System Based on Deep Learning\n\nTo address the problems of low efficiency, heavy reliance on manual experience, and high error rate in traditional Chinese herbal medicine identification, this paper proposes an intelligent recognition system based on deep learning. The system adopts the EfficientNet-B3 model as the feature extraction network and utilizes transfer learning to train on a Chinese herbal medicine image dataset, achieving high-accuracy classification. Meanwhile, a knowledge base module of medicinal properties and therapeutic effects is constructed to automatically associate and display pharmacological information according to recognition results. Experimental results show that the proposed model achieves an accuracy of 97.8% on the self-built dataset, outperforming the ResNet50 model by approximately 2.3%, which demonstrates its effectiveness and superiority. This system not only improves the automation and intelligence level of herbal medicine identification but also provides technical support for the digitalization and intelligent development of traditional Chinese medicine.\n\nChinese herbal medicine recognition; deep learning; EfficientNet; image classification; knowledge base\n\n中草药是中华民族传统医学的重要组成部分，在疾病的预防与治疗中发挥着不可替代的作用。然而，传统的中药材识别主要依赖人工经验与感官判断，这不仅效率低下，而且易受识别者主观因素影响，导致误识率较高。随着中药材种类的不断增多和应用场景的复杂化，如何实现中草药的智能化、自动化识别已成为中医药现代化发展的关键问题之一。\n\n近年来，深度学习（Deep Learning）技术在图像识别领域取得了显著进展，尤其是卷积神经网络（CNN）在植物识别、病虫害检测、医学影像分析等领域表现出卓越的特征提取能力。研究者们尝试将 ResNet、DenseNet、Inception、EfficientNet 等网络结构应用于中药材图像识别任务，并在一定程度上提升了分类精度。然而，现有研究仍存在若干不足：一是中药材图像数据集规模较小、样本分布不均衡；二是模型识别结果仅停留在药材名称层面，缺乏对药性、功效等知识的深度关联；三是系统交互性和可视化功能较弱，难以满足教学、科研及临床应用需求。\n\n针对上述问题，本文提出一种基于深度学习的中草药识别系统。该系统以 EfficientNet-B3 为核心分类模型，利用迁移学习策略实现中药材图像的高精度识别，并结合药性与功效知识库，实现识别结果与中药药理信息的自动关联与展示。系统整体包括数据预处理、模型训练、识别预测、知识库查询和结果展示等模块。通过实验验证，所提出的模型在自建中草药图像数据集上取得了优异的分类性能，验证了该方法在中药材智能识别领域的可行性与有效性。\n\n本文的研究不仅为中草药识别的自动化和智能化提供了新思路，也为中医药知识的数字化与可视化应用提供了技术支持，具有重要的理论价值与实际意义。\n\n本研究的中草药识别系统以深度学习为核心，结合迁移学习与知识库技术，实现中药材的图像智能识别与药理信息自动输出。为便于理解系统的技术基础，本节将介绍本研究中所采用的关键技术，包括卷积神经网络（CNN）、迁移学习、EfficientNet 模型、图像数据增强技术以及药性知识库设计原理。\n\n卷积神经网络（Convolutional Neural Network, CNN） 卷积神经网络是一种典型的深度学习结构，广泛应用于图像分类、目标检测和语义分割等计算机视觉任务。其核心思想是通过局部连接、权值共享和池化操作自动提取图像的空间层级特征。\n\n在中药材识别任务中，CNN 能够从药材表面纹理、形态特征及颜色分布中提取深层语义信息，相比传统的特征工程方法（如 HOG、SIFT），具有更强的鲁棒性与泛化能力。常见的 CNN 结构包括 LeNet、AlexNet、VGG、ResNet 和 EfficientNet 等，其中后者在参数量与性能间取得了较好的平衡。\n\n迁移学习（Transfer Learning） 迁移学习是一种利用已有模型知识来解决新任务的机器学习方法，尤其适用于样本量有限的场景。\n\n在本研究中，考虑到中药材图像数据集规模相对较小，直接从零训练深度模型容易出现过拟合问题，因此本文采用迁移学习策略。具体做法是以在 ImageNet 数据集上预训练的 EfficientNet-B3 模型为基础，保留其前层卷积特征提取部分，仅对后续全连接层进行微调。该方法不仅能显著缩短训练时间，还能有效提升模型的识别精度与稳定性。\n\nEfficientNet 是由 Google 于 2019 年提出的一种高效卷积神经网络结构，通过一种称为 复合缩放（Compound Scaling） 的方法，在网络深度、宽度与分辨率之间实现平衡扩展。\n\n其核心思想是：在不显著增加计算量的前提下，同时优化网络的多维度结构，从而在保证较低参数量的同时获得更高的识别精度。\n本文选用 EfficientNet-B3 作为核心分类模型，该版本在计算效率与性能之间取得了优良的折中，特别适用于中草药识别这类需要高分辨率图像特征提取的任务。模型在训练过程中使用 Adam 优化器和交叉熵损失函数（CrossEntropyLoss），并结合余弦退火学习率调度策略（Cosine Annealing LR）以实现更优的收敛效果。\n\n图像数据增强（Data Augmentation）是提升模型泛化能力的重要手段。通过对训练样本进行随机旋转、翻转、裁剪、缩放、亮度调整等操作，可有效模拟不同拍摄角度与光照条件下的样本差异。\n\n本文采用的图像增强策略包括：随机水平翻转（RandomHorizontalFlip）、随机旋转（RandomRotation）及归一化（Normalize）。这些方法不仅扩充了数据集的多样性，也提高了模型对背景、角度与光照变化的鲁棒性，从而显著提升了模型的泛化能力。\n\n为实现识别结果的智能化展示，本文构建了基于 JSON 文件格式的中药药性与功效知识库。该知识库以药材名称为主键，包含多个字段信息，如“中文名”、“别名”、“性味”、“归经”、“功效”、“主治”、“用法用量”及“注意事项”等。\n\n系统在识别出药材名称后，可自动查询对应条目并输出药性与功效信息，从而实现从图像识别到知识推理的闭环。该设计不仅增强了系统的实用性，也为中药学知识的数字化存储与扩展提供了结构化基础。\n\n本研究设计并实现了一套基于深度学习的中草药识别系统，系统主要由五个核心模块组成：数据预处理模块、模型训练模块、识别预测模块、药性知识库模块与用户交互界面模块。整个系统以 EfficientNet-B3 模型为核心，通过迁移学习实现中药材图像的高精度识别，并结合中药药性与功效知识库，实现了从“图像识别”到“药理解释”的信息闭环。本节将从系统架构、数据构建、模型设计与实现、知识库构建以及界面实现等方面进行详细阐述。\n\n系统总体架构由前端交互层、模型服务层和数据支撑层组成。前端层主要负责图像上传与识别结果展示；模型服务层利用深度学习模型完成图像分类任务；数据支撑层则包括药性功效知识库和历史识别记录数据库。用户通过系统界面上传药材图片，后台程序对输入图像进行预处理后传入 EfficientNet-B3 模型进行推理，得到药材类别预测结果；随后系统根据预测结果在药性知识库中查找对应的中药信息，并自动输出药性、功效、主治及注意事项等内容，从而实现了中草药图像识别与知识智能联动的完整流程。整个系统采用模块化设计，各部分相互独立又有机协同，具有良好的扩展性与可维护性。\n\n例如，当用户上传一张“白茅根”的图片时，系统首先将图像缩放至 224×224 并进行归一化处理，然后送入训练好的 EfficientNet-B3 模型。模型经过卷积特征提取和分类层计算后输出预测结果“baimaogen”。随后，系统自动在 tcm_info.json 文件中查找该药材条目，并将其中的“甘，寒”、“凉血止血，清热利尿”等药理信息在界面中实时展示。这种自动化识别与知识推理的结合，使中药材识别不再仅停留在图像层面，而实现了信息的语义化呈现。\n\n本研究所使用的中草药图像数据来自百度飞桨（PaddlePaddle）AI Studio 平台的公开数据集——“智慧岐黄：163种中药材深度图像辨识库”（数据集编号：246739）。该数据集由专业团队采集整理，涵盖了 163 种常见中药材，共计 266,767 张图像，是目前国内公开中药图像识别任务中规模较大、质量较高的标准化数据集之一。该数据集在药材多样性、图像清晰度和拍摄场景覆盖度方面均具有显著优势，能够充分支持深度学习模型在复杂环境下的泛化能力研究。\n\n该数据集遵循 PaddleX 标准数据集规范，已按照官方标准完成训练集与验证集的划分，其中 训练集包含 256,767 张图像，验证集包含 10,000 张图像。每张图像均对应唯一的药材类别标签，图像内容涵盖药材的不同部位、拍摄角度、背景及光照条件，确保数据的全面性与代表性。数据集中涉及的药材包括白芍、黄芩、当归、川芎、金银花、枸杞、三七等多种常用中药，既包含植物类药材，也包含动物与矿物类样本，具备较高的学术研究与实际应用价值。\n\n在数据预处理环节中，为保证模型输入的统一性和训练过程的稳定性，本文对原始图像进行了系统性的预处理操作。首先，所有图像被调整至 224×224 像素大小，以适配 EfficientNet-B3 模型的输入维度。随后，采用 随机水平翻转（RandomHorizontalFlip）、随机旋转（RandomRotation） 和 亮度归一化（Normalize） 等数据增强手段，以模拟自然拍摄中可能出现的角度偏差、光照变化和背景干扰，从而提升模型的鲁棒性与泛化能力。例如，对于同一种药材“黄芩”，其在不同光照条件下的颜色饱和度存在明显差异，通过数据增强可有效降低模型对光照特征的依赖，使其更关注药材本身的形态与纹理特征。\n\n经过预处理的数据在加载阶段被封装为 PyTorch 的 Dataset 与 DataLoader 对象，以支持批量加载与 GPU 加速训练。通过设置合适的 batch size 和 shuffle 参数，系统在保证训练效率的同时实现了数据样本的随机化输入，有效防止模型陷入局部最优。由于该数据集本身已按照官方规范完成划分，因此本文直接采用其提供的训练集与验证集结构，无需重新划分样本比例，从而确保实验结果的一致性与可复现性。\n\n“智慧岐黄”数据集的高质量与多样性为本研究提供了坚实的数据基础，其丰富的类别特征与样本数量为 EfficientNet-B3 模型的深层特征提取提供了充分支撑，也为后续中药智能识别系统的泛化能力验证奠定了可靠的数据保障。\n\n在模型设计方面，本文选用 EfficientNet-B3 作为中草药图像识别的核心分类网络。EfficientNet 系列模型由 Google Brain 团队提出，其主要创新在于通过 复合缩放（Compound Scaling） 策略在网络深度、宽度和输入分辨率之间实现协调扩展，从而在较小参数量下获得更高的准确率。与传统的 VGG16 或 ResNet50 等卷积神经网络相比，EfficientNet 在保持计算效率的同时能够更有效地捕捉复杂图像特征，因此非常适合用于中草药图像识别这类多类别、高相似度的任务。\n\n在模型构建过程中，本文基于 PyTorch 深度学习框架 实现 EfficientNet-B3，并加载 ImageNet 数据集的预训练权重以进行迁移学习。考虑到中草药图像种类繁多、样本数量不平衡等特征，模型采用 微调（Fine-tuning）策略：保留预训练模型的前层卷积结构，用于通用特征提取；同时根据中草药识别任务的需求，重新定义最后的全连接层为 163 类输出，并在分类层中加入 Dropout 层 与 Batch Normalization 层，以减轻过拟合风险并提升模型的泛化性能。\n\n在训练配置方面，优化器选用 Adam，初始学习率设置为 0.005，权重衰减系数（Weight Decay）为 3×10⁻⁵，以平衡模型更新速度与正则化约束。损失函数采用 交叉熵损失函数（CrossEntropyLoss），适用于多分类任务。为进一步提升模型收敛的稳定性与效率，本文引入 余弦退火学习率调度策略（CosineAnnealingLR），使学习率在训练过程中逐步衰减，从而提高模型后期训练阶段的优化效果。\n\n实验训练在 NVIDIA RTX 4090 GPU 环境下完成，Batch size 设置为 32，训练轮数（Epochs）为 10。由于数据集规模较大且药材类别众多，为防止模型在训练过程中过拟合，系统引入 早停机制（Early Stopping），当验证集性能在连续若干轮未提升时自动终止训练，从而节省计算资源并防止性能下降。训练过程中，系统同时记录模型在训练集与验证集上的损失变化与准确率变化趋势，并绘制损失曲线（Loss Curve）和准确率曲线（Accuracy Curve），用于后续实验分析与模型性能评估。\n\n此外，为了进一步验证模型架构选择的合理性，本文在相同实验条件下还训练了 ResNet50 模型作为对照实验对象。两种模型在训练流程、参数设置及数据输入方式上保持一致，便于后续实验分析中进行性能对比与效果评估。该对照实验的结果将在后续章节的“实验分析”部分中详细讨论。\n\n为实现识别结果的智能化解释与扩展性展示，本文设计了一个基于 JSON 格式的中药药性与功效知识库。该知识库以药材英文标签为主键，包含“中文名”、“别名”、“拉丁名”、“性味”、“归经”、“功效”、“主治”、“用法用量”和“注意事项”等字段。例如，对于“白茅根”，其对应的知识库条目为：\n\n\"主治\": \"血热吐血、衄血、尿血、热病烦渴、水肿尿少\", 系统运行时会自动加载该文件，当模型输出药材标签时，程序通过名称匹配即可实时调用对应条目，从而实现识别结果与药理知识的无缝连接。该设计极大地提升了系统的可扩展性——只需在 JSON 文件中添加新药材条目，即可支持更多类别的识别与信息展示，无需重新训练模型。\n\n系统的用户界面基于 Flask 框架与前端网页技术实现，具备简洁直观的交互设计。用户可通过浏览器直接访问系统界面，上传任意中药材图片并选择使用的模型（EfficientNet-B3 或 ResNet50）。系统在后台完成识别计算后，会自动返回预测结果，并以卡片形式展示中药的药性与功效信息。例如，当识别出“黄芩”时，界面会显示其性味“苦、寒”，功效“清热燥湿，泻火解毒”，以及主治“湿热痞满、黄疸、肺热咳嗽”等内容。\n\n此外，系统界面还支持用户查看识别置信度、导出识别记录、以及在未来版本中实现实时摄像头识别功能。模块化设计保证了系统易于维护与升级，为后续将中药识别系统扩展到移动端或嵌入式设备奠定了基础。\n\n综上所述，本系统通过深度学习模型与中药知识库的有机结合，成功实现了中草药图像的高精度识别及药理信息的自动输出。系统不仅在技术上具有创新性与实用性，还在中医药信息化与智能识别领域展现了良好的应用潜力。\n\n为验证本文所设计的中草药识别系统的有效性与实用性，本节从实验环境、评价指标、模型性能对比及结果分析等方面进行详细论述。实验的主要目标是评估 EfficientNet-B3 模型在“智慧岐黄：163种中药材深度图像辨识库”数据集上的分类性能，并通过与 ResNet50 模型的对比分析，验证所选模型结构在中草药识别任务中的优势与可行性。\n\n本研究的实验在高性能 GPU 服务器环境下完成。服务器操作系统为 Ubuntu 20.04，内核版本为 5.15.0-78-generic，配备两颗 Intel Xeon Platinum 8352V 处理器（共 128 线程）和 1TB 内存，具备强大的数据处理与并行计算能力。实验所用显卡为 NVIDIA GeForce RTX 4090（显存 24GB），驱动版本为 570.124.04，支持 CUDA 12.8 与 cuDNN 8.4 深度学习加速库，为模型训练提供了高效的并行计算性能。\n\n软件环境方面，实验基于 Python 3.8.10 编程语言，在 PyTorch 2.0.0 深度学习框架下完成模型构建与训练，辅助依赖库包括 torchvision（用于图像预处理与增强）、numpy（用于数值运算）、matplotlib（用于结果可视化）等。训练过程中启用了 G"
+  },
+  "step": "01-paper-analysis",
+  "expected_response_path": "D:\\py projects\\paper-agent\\paper-cite-agent\\codex_smoke\\tasks\\01-paper-analysis.response.json"
+}

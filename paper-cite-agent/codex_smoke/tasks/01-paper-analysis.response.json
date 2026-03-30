@@ -1,0 +1,26 @@
+{
+  "field": "Computer Vision",
+  "field_zh": "?????",
+  "keywords": [
+    "Chinese herbal medicine recognition",
+    "deep learning",
+    "transfer learning"
+  ],
+  "keywords_zh": [
+    "?????",
+    "????",
+    "????"
+  ],
+  "summary": "Smoke test analysis.",
+  "core_problem": "Recognize Chinese herbal medicine images.",
+  "methods": [
+    "EfficientNet-B3",
+    "transfer learning"
+  ],
+  "search_queries": [
+    "Chinese herbal medicine image recognition deep learning"
+  ],
+  "search_queries_zh": [
+    "??? ???? ????"
+  ]
+}

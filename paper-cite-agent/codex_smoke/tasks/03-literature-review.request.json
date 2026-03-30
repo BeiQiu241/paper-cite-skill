@@ -1,0 +1,91 @@
+{
+  "task_type": "literature_review",
+  "instructions": [
+    "Select the most relevant references for the target paper.",
+    "Return JSON only.",
+    "Prefer about 5 Chinese papers and 5 English papers when possible."
+  ],
+  "response_schema": {
+    "type": "object",
+    "required": [
+      "selected"
+    ]
+  },
+  "response_example": {
+    "selected": [
+      {
+        "index": 0,
+        "lang": "中文",
+        "reason": "Directly matches the paper topic."
+      },
+      {
+        "index": 1,
+        "lang": "英文",
+        "reason": "Useful as a method or experiment baseline."
+      }
+    ]
+  },
+  "input": {
+    "paper_analysis": {
+      "field": "Computer Vision",
+      "field_zh": "?????",
+      "keywords": [
+        "Chinese herbal medicine recognition",
+        "deep learning",
+        "transfer learning"
+      ],
+      "keywords_zh": [
+        "?????",
+        "????",
+        "????"
+      ],
+      "summary": "Smoke test analysis.",
+      "core_problem": "Recognize Chinese herbal medicine images.",
+      "methods": [
+        "EfficientNet-B3",
+        "transfer learning"
+      ],
+      "search_queries": [
+        "Chinese herbal medicine image recognition deep learning"
+      ],
+      "search_queries_zh": [
+        "??? ???? ????"
+      ]
+    },
+    "cn_count": 5,
+    "en_count": 5,
+    "candidates": [
+      {
+        "title": "Chinese Herbal Medicine Image Recognition and Retrieval by Convolutional Neural Network",
+        "year": 2016,
+        "journal": "PLoS ONE",
+        "abstract": "CNN-based recognition of Chinese herbal medicine images.",
+        "authors": [
+          "Sun",
+          "Qian"
+        ],
+        "doi": "10.1371/journal.pone.0156327",
+        "url": "https://doi.org/10.1371/journal.pone.0156327",
+        "source": "codex",
+        "lang": "en",
+        "citations": 10
+      },
+      {
+        "title": "Image recognition of traditional Chinese medicine based on deep learning",
+        "year": 2023,
+        "journal": "Frontiers in Bioengineering and Biotechnology",
+        "abstract": "Deep learning for traditional Chinese medicine recognition.",
+        "authors": [
+          "Miao"
+        ],
+        "doi": "",
+        "url": "",
+        "source": "codex",
+        "lang": "zh",
+        "citations": 5
+      }
+    ]
+  },
+  "step": "03-literature-review",
+  "expected_response_path": "D:\\py projects\\paper-agent\\paper-cite-agent\\codex_smoke\\tasks\\03-literature-review.response.json"
+}

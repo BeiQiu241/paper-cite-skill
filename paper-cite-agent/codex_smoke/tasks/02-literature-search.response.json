@@ -1,0 +1,33 @@
+{
+  "candidates": [
+    {
+      "title": "Chinese Herbal Medicine Image Recognition and Retrieval by Convolutional Neural Network",
+      "year": 2016,
+      "journal": "PLoS ONE",
+      "abstract": "CNN-based recognition of Chinese herbal medicine images.",
+      "authors": [
+        "Sun",
+        "Qian"
+      ],
+      "doi": "10.1371/journal.pone.0156327",
+      "url": "https://doi.org/10.1371/journal.pone.0156327",
+      "source": "codex",
+      "lang": "en",
+      "citations": 10
+    },
+    {
+      "title": "Image recognition of traditional Chinese medicine based on deep learning",
+      "year": 2023,
+      "journal": "Frontiers in Bioengineering and Biotechnology",
+      "abstract": "Deep learning for traditional Chinese medicine recognition.",
+      "authors": [
+        "Miao"
+      ],
+      "doi": "",
+      "url": "",
+      "source": "codex",
+      "lang": "zh",
+      "citations": 5
+    }
+  ]
+}

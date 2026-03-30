@@ -1,364 +1,202 @@
-"""参考文献生成模块：生成 GB/T 7714 / APA / IEEE 格式的参考文献列表。
+"""Reference formatting helpers."""
 
-GB/T 7714-2015（默认）：
-  中文: [序号] 作者. 标题[J]. 期刊名, 年份, 卷(期): 页码. DOI.
-  英文: [序号] LAST F, LAST F. Title[J]. Journal, Year, Vol(No): Pages. DOI.
-APA：
-  作者. (年). 标题. 期刊名, 卷(期), 页码.
-IEEE：
-  [序号] 作者, "标题," 期刊名, vol., no., pp., 年.
-"""
+from __future__ import annotations
 
 import re
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from docx import Document
+from docx.enum.section import WD_SECTION_START
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.ns import qn
 from docx.shared import Pt
 
 
+ZH_ET_AL = "\u7b49"
+ZH_REFERENCE_HEADING = "\u53c2\u8003\u6587\u732e"
+ZH_SONGTI = "\u5b8b\u4f53"
+ZH_HEITI = "\u9ed1\u4f53"
+
+
 def _is_zh_paper(paper: Dict[str, Any]) -> bool:
-    """判断是否应使用中文格式（中文标题或明确标记为 zh）。"""
-    if paper.get("lang") == "zh":
-        return True
-    title = paper.get("title", "")
-    return bool(re.search(r'[\u4e00-\u9fff]', title))
+    """Infer whether a paper should be formatted as Chinese."""
+    return str(paper.get("lang", "")).lower() == "zh" or bool(
+        re.search(r"[\u4e00-\u9fff]", str(paper.get("title", "")))
+    )
 
 
-def _cn_en_counts(papers: List[Dict[str, Any]]) -> tuple[int, int]:
-    cn = sum(1 for p in papers if _is_zh_paper(p))
-    en = len(papers) - cn
-    return cn, en
+def _author_list(paper: Dict[str, Any]) -> List[str]:
+    """Return cleaned authors."""
+    authors = paper.get("authors") or []
+    cleaned = [str(author).strip() for author in authors if str(author).strip()]
+    return cleaned
 
 
-def _journal_suffix_apa(paper: Dict[str, Any]) -> str:
-    """拼接期刊信息后缀（APA 英文格式）。"""
-    journal = paper.get("journal", "")
-    volume = str(paper.get("volume", "") or "")
-    issue = str(paper.get("issue", "") or "")
-    pages = str(paper.get("pages", "") or "")
-
-    if not journal:
-        return ""
-    parts = [f" *{journal}*"]
-    if volume:
-        parts.append(f", *{volume}*")
-        if issue:
-            parts.append(f"({issue})")
-    if pages:
-        parts.append(f", {pages}")
-    return "".join(parts) + "."
+def _join_authors(paper: Dict[str, Any]) -> str:
+    """Join authors in a compact GB/T-style list."""
+    authors = _author_list(paper)
+    if not authors:
+        return "Unknown Author"
+    if len(authors) > 3:
+        shown = authors[:3]
+        suffix = ZH_ET_AL if _is_zh_paper(paper) else "et al"
+        return f"{', '.join(shown)}, {suffix}"
+    return ", ".join(authors)
 
 
-def _journal_suffix_zh(paper: Dict[str, Any]) -> str:
-    """拼接期刊信息后缀（中文格式）。"""
-    journal = paper.get("journal", "")
-    volume = str(paper.get("volume", "") or "")
-    issue = str(paper.get("issue", "") or "")
-    pages = str(paper.get("pages", "") or "")
+def _source_parts(paper: Dict[str, Any]) -> str:
+    """Build journal, year, volume, issue, and pages text."""
+    journal = str(paper.get("journal") or "").strip()
+    year = str(paper.get("year") or "").strip()
+    volume = str(paper.get("volume") or "").strip()
+    issue = str(paper.get("issue") or "").strip()
+    pages = str(paper.get("pages") or "").strip()
 
-    if not journal:
-        return ""
-    parts = [journal]
-    if volume:
-        parts.append(f", {volume}")
-        if issue:
-            parts.append(f"({issue})")
-    if pages:
-        parts.append(f", {pages}")
-    return "".join(parts) + "."
-
-
-def format_apa(paper: Dict[str, Any], index: int) -> str:
-    """生成 APA 格式引用；中文论文自动使用中文学术格式。"""
-    if _is_zh_paper(paper):
-        return _format_zh(paper)
-
-    authors = paper.get("authors", [])
-    year = paper.get("year", "n.d.")
-    title = paper.get("title", "Unknown Title")
-    doi = paper.get("doi", "")
-    url = paper.get("url", "")
-
-    formatted_authors = []
-    for author in authors[:6]:
-        parts = author.strip().split()
-        if len(parts) >= 2:
-            last = parts[-1]
-            initials = ". ".join(p[0] for p in parts[:-1] if p) + "."
-            formatted_authors.append(f"{last}, {initials}")
-        else:
-            formatted_authors.append(author)
-
-    if len(authors) > 6:
-        author_str = ", ".join(formatted_authors[:6]) + ", ... " + formatted_authors[-1]
-    elif len(formatted_authors) > 1:
-        author_str = ", ".join(formatted_authors[:-1]) + ", & " + formatted_authors[-1]
-    elif formatted_authors:
-        author_str = formatted_authors[0]
-    else:
-        author_str = "Unknown Author"
-
-    ref = f"{author_str} ({year}). {title}."
-
-    journal_part = _journal_suffix_apa(paper)
-    if journal_part:
-        ref += " " + journal_part
-    elif doi:
-        ref += f" https://doi.org/{doi}"
-    elif url:
-        ref += f" {url}"
-
-    return ref
-
-
-def _format_zh(paper: Dict[str, Any]) -> str:
-    """中文学术格式：作者. (年). 标题. 期刊名, 卷(期), 页码."""
-    authors = paper.get("authors", [])
-    year = paper.get("year", "n.d.")
-    title = paper.get("title", "")
-    doi = paper.get("doi", "")
-    url = paper.get("url", "")
-
-    # 中文作者直接拼接，英文名保持原样
-    author_str = ", ".join(authors[:6])
-    if len(authors) > 6:
-        author_str += ", 等"
-    if not author_str:
-        author_str = "佚名"
-
-    ref = f"{author_str}. ({year}). {title}."
-
-    journal_part = _journal_suffix_zh(paper)
-    if journal_part:
-        ref += " " + journal_part
-    elif doi:
-        ref += f" https://doi.org/{doi}"
-    elif url:
-        ref += f" {url}"
-
-    return ref
-
-
-def format_ieee(paper: Dict[str, Any], index: int) -> str:
-    """生成 IEEE 格式引用；中文论文保留期刊信息。"""
-    authors = paper.get("authors", [])
-    year = paper.get("year", "n.d.")
-    title = paper.get("title", "Unknown Title")
-    doi = paper.get("doi", "")
-    url = paper.get("url", "")
-    journal = paper.get("journal", "")
-    volume = str(paper.get("volume", "") or "")
-    issue = str(paper.get("issue", "") or "")
-    pages = str(paper.get("pages", "") or "")
-
-    formatted_authors = []
-    for author in authors[:6]:
-        parts = author.strip().split()
-        if len(parts) >= 2:
-            last = parts[-1]
-            initials = ". ".join(p[0] for p in parts[:-1] if p) + "."
-            formatted_authors.append(f"{initials} {last}")
-        else:
-            formatted_authors.append(author)
-
-    if len(authors) > 6:
-        author_str = ", ".join(formatted_authors[:6]) + " et al."
-    else:
-        author_str = ", ".join(formatted_authors)
-
-    ref = f"[{index}] {author_str}, \"{title},\""
+    parts: List[str] = []
     if journal:
-        ref += f" {journal},"
+        parts.append(journal)
+
+    year_part = year
     if volume:
-        ref += f" vol. {volume},"
+        year_part = f"{year_part}, {volume}" if year_part else volume
         if issue:
-            ref += f" no. {issue},"
+            year_part = f"{year_part}({issue})"
+    elif issue:
+        year_part = f"{year_part}({issue})" if year_part else f"({issue})"
+
     if pages:
-        ref += f" pp. {pages},"
-    ref += f" {year}."
+        year_part = f"{year_part}: {pages}" if year_part else pages
+
+    if year_part:
+        parts.append(year_part)
+    return ". ".join(parts)
+
+
+def _append_locator(ref: str, paper: Dict[str, Any]) -> str:
+    """Append DOI or URL when present."""
+    doi = str(paper.get("doi") or "").strip()
+    url = str(paper.get("url") or "").strip()
     if doi:
-        ref += f" doi: {doi}."
-    elif url:
-        ref += f" [Online]. Available: {url}"
-
+        return f"{ref} DOI: {doi}."
+    if url:
+        return f"{ref} Available: {url}."
     return ref
-
-
-def _format_gbt7714_authors_zh(authors: List[str]) -> str:
-    """中文 GB/T 7714 作者格式：直接拼接，超6人加"等"。"""
-    author_str = ", ".join(authors[:6])
-    if len(authors) > 6:
-        author_str += ", 等"
-    return author_str or "佚名"
-
-
-def _format_gbt7714_authors_en(authors: List[str]) -> str:
-    """英文 GB/T 7714 作者格式：LAST F（大写），超6人加 et al。"""
-    formatted = []
-    for author in authors[:6]:
-        parts = author.strip().split()
-        if len(parts) >= 2:
-            last = parts[-1].upper()
-            initials = " ".join(p[0].upper() + "." for p in parts[:-1] if p)
-            formatted.append(f"{last} {initials}")
-        else:
-            formatted.append(author.upper())
-    if len(authors) > 6:
-        return ", ".join(formatted) + ", et al"
-    return ", ".join(formatted) or "Unknown Author"
-
-
-def _gbt7714_journal_part(paper: Dict[str, Any]) -> str:
-    """拼接 GB/T 7714 期刊/卷期/页码部分。"""
-    journal = paper.get("journal", "")
-    volume = str(paper.get("volume", "") or "")
-    issue = str(paper.get("issue", "") or "")
-    pages = str(paper.get("pages", "") or "")
-    year = str(paper.get("year", "") or "")
-
-    parts = []
-    if journal:
-        parts.append(f" {journal},")
-    if year:
-        parts.append(f" {year}")
-    if volume:
-        parts.append(f", {volume}")
-        if issue:
-            parts.append(f"({issue})")
-    if pages:
-        parts.append(f": {pages}")
-    return "".join(parts)
 
 
 def format_gbt7714(paper: Dict[str, Any], index: int) -> str:
-    """生成 GB/T 7714-2015 格式引用（期刊文章 [J]）。"""
-    authors = paper.get("authors", [])
-    title = paper.get("title", "")
-    doi = paper.get("doi", "")
-    url = paper.get("url", "")
+    """Format one reference in simplified GB/T 7714-2015 journal style."""
+    ref = f"[{index}] {_join_authors(paper)}. {paper.get('title', 'Untitled')}[J]."
+    source = _source_parts(paper)
+    if source:
+        ref = f"{ref} {source}."
+    return _append_locator(ref, paper)
 
-    if _is_zh_paper(paper):
-        author_str = _format_gbt7714_authors_zh(authors)
-    else:
-        author_str = _format_gbt7714_authors_en(authors)
 
-    ref = f"[{index}] {author_str}. {title}[J]."
-    ref += _gbt7714_journal_part(paper)
-    ref += "."
+def format_apa(paper: Dict[str, Any], index: int) -> str:
+    """Format one reference in simplified APA style."""
+    year = paper.get("year") or "n.d."
+    ref = f"{_join_authors(paper)} ({year}). {paper.get('title', 'Untitled')}."
+    source = _source_parts(paper)
+    if source:
+        ref = f"{ref} {source}."
+    return _append_locator(ref, paper)
 
-    if doi:
-        ref += f" DOI: {doi}."
-    elif url:
-        ref += f" {url}"
 
-    return ref
+def format_ieee(paper: Dict[str, Any], index: int) -> str:
+    """Format one reference in simplified IEEE style."""
+    ref = f"[{index}] {_join_authors(paper)}, \"{paper.get('title', 'Untitled')}.\""
+    source = _source_parts(paper)
+    if source:
+        ref = f"{ref} {source}."
+    return _append_locator(ref, paper)
 
 
 def generate_reference_list(
     papers: List[Dict[str, Any]],
     fmt: str = "GBT7714",
 ) -> List[str]:
-    """生成完整参考文献列表。"""
-    references = []
-    fmt_upper = fmt.upper().replace("-", "").replace(" ", "").replace("/", "")
-    for i, paper in enumerate(papers, start=1):
-        if fmt_upper == "IEEE":
-            ref = format_ieee(paper, i)
-        elif fmt_upper in ("APA",):
-            ref = format_apa(paper, i)
-        else:  # GBT7714 / GB/T7714 / default
-            ref = format_gbt7714(paper, i)
-        references.append(ref)
-    return references
+    """Generate formatted references."""
+    formatter = {
+        "GBT7714": format_gbt7714,
+        "GBT7714-2015": format_gbt7714,
+        "GB/T7714": format_gbt7714,
+        "GB/T7714-2015": format_gbt7714,
+        "APA": format_apa,
+        "IEEE": format_ieee,
+    }.get(fmt.upper(), format_gbt7714)
+
+    return [formatter(paper, index) for index, paper in enumerate(papers, start=1)]
 
 
-def save_references_txt(
-    references: List[str],
-    output_path: str,
-    all_candidates: List[Dict[str, Any]] = None,
-    selected_papers: List[Dict[str, Any]] = None,
-    fmt: str = "APA",
-):
-    """
-    保存参考文献列表到 txt 文件。
+def _numbered_reference(ref: str, index: int) -> str:
+    """Keep numbering stable even for non-numbered styles."""
+    if ref.lstrip().startswith("["):
+        return ref
+    return f"[{index}] {ref}"
 
-    - references      : 推荐文献（已格式化字符串，写入"推荐参考文献"区块）
-    - all_candidates  : 全部候选文献原始列表，写入"全部候选文献"区块
-    - fmt             : 全部候选的格式化格式
-    """
-    with open(output_path, "w", encoding="utf-8") as f:
-        # ── 推荐文献 ──────────────────────────────────────────────
-        if selected_papers is not None:
-            cn, en = _cn_en_counts(selected_papers)
-            f.write(f"[LLM审查] 选出 {len(selected_papers)} 篇（中文 {cn} 篇 / 英文 {en} 篇）\n")
-        else:
-            f.write(f"[LLM审查] 选出 {len(references)} 篇\n")
-        f.write("=" * 60 + "\n\n")
-        for ref in references:
-            f.write(ref + "\n\n")
 
-        # ── 全部候选 ──────────────────────────────────────────────
-        if all_candidates:
-            f.write("\n\n【全部候选文献（按相关度排序）】\n")
-            f.write("=" * 60 + "\n")
-            f.write(f"共 {len(all_candidates)} 篇\n\n")
+def save_references_txt(references: List[str], output_path: str) -> None:
+    """Write references to a plain text file."""
+    with open(output_path, "w", encoding="utf-8") as handle:
+        handle.write(f"{ZH_REFERENCE_HEADING}\n")
+        handle.write("=" * 40 + "\n\n")
+        for index, reference in enumerate(references, start=1):
+            handle.write(_numbered_reference(reference, index) + "\n")
+    print(f"  References saved: {output_path}")
 
-            cn_papers = [p for p in all_candidates
-                         if p.get("source", "").endswith("_cn") or p.get("lang") == "zh"]
-            en_papers = [p for p in all_candidates
-                         if not (p.get("source", "").endswith("_cn") or p.get("lang") == "zh")]
 
-            if cn_papers:
-                f.write(f"── 中国机构/中文文献（{len(cn_papers)} 篇）──\n\n")
-                for i, paper in enumerate(cn_papers, 1):
-                    ref = format_apa(paper, i) if fmt.upper() != "IEEE" else format_ieee(paper, i)
-                    score = paper.get("_score")
-                    score_str = f"  [相关度: {score:.3f}]" if score is not None else ""
-                    f.write(f"{ref}{score_str}\n\n")
+def _apply_reference_run_style(run) -> None:
+    """Apply mixed Chinese/English font settings required by the template."""
+    run.font.name = "Times New Roman"
+    run._element.get_or_add_rPr().rFonts.set(qn("w:eastAsia"), ZH_SONGTI)
+    run.font.size = Pt(10.5)
 
-            if en_papers:
-                f.write(f"── 英文文献（{len(en_papers)} 篇）──\n\n")
-                for i, paper in enumerate(en_papers, 1):
-                    ref = format_apa(paper, i) if fmt.upper() != "IEEE" else format_ieee(paper, i)
-                    score = paper.get("_score")
-                    score_str = f"  [相关度: {score:.3f}]" if score is not None else ""
-                    f.write(f"{ref}{score_str}\n\n")
 
-    print(f"  [References] 参考文献已保存至: {output_path}")
+def _add_reference_heading(doc: Document) -> None:
+    """Append the formatted reference heading."""
+    paragraph = doc.add_paragraph()
+    try:
+        paragraph.style = "Heading 1"
+    except KeyError:
+        pass
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    paragraph.paragraph_format.line_spacing = 1.25
+    paragraph.paragraph_format.space_before = Pt(14)
+    paragraph.paragraph_format.space_after = Pt(14)
+
+    run = paragraph.add_run(ZH_REFERENCE_HEADING)
+    run.bold = True
+    run.font.size = Pt(14)
+    run.font.name = "Times New Roman"
+    run._element.get_or_add_rPr().rFonts.set(qn("w:eastAsia"), ZH_HEITI)
+
+
+def _add_reference_paragraph(doc: Document, text: str) -> None:
+    """Append one formatted reference paragraph."""
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    paragraph.paragraph_format.line_spacing = 1.25
+    paragraph.paragraph_format.left_indent = Pt(0)
+    paragraph.paragraph_format.first_line_indent = Pt(-15.75)
+    paragraph.paragraph_format.space_before = Pt(0)
+    paragraph.paragraph_format.space_after = Pt(0)
+
+    run = paragraph.add_run(text)
+    _apply_reference_run_style(run)
 
 
 def append_references_to_docx(
     doc_path: str,
     output_path: str,
     references: List[str],
-    papers: List[Dict[str, Any]],
-):
-    """将参考文献列表追加写入 Word 文档末尾。"""
+) -> None:
+    """Append a formatted reference section to the end of a Word document."""
     doc = Document(doc_path)
-
-    doc.add_page_break()
-    cn, en = _cn_en_counts(papers)
-    heading = doc.add_heading(
-        f"[LLM审查] 选出 {len(papers)} 篇（中文 {cn} 篇 / 英文 {en} 篇）",
-        level=1,
-    )
-
-    for i, (ref, paper) in enumerate(zip(references, papers), start=1):
-        para = doc.add_paragraph(ref)
-        para.style = doc.styles["Normal"]
-
-        # 添加链接信息
-        url = paper.get("url", "")
-        pdf_url = paper.get("pdf_url", "")
-        if url or pdf_url:
-            link_text = []
-            if url:
-                link_text.append(f"链接: {url}")
-            if pdf_url:
-                link_text.append(f"PDF: {pdf_url}")
-            note_para = doc.add_paragraph("    " + " | ".join(link_text))
-            note_para.runs[0].font.size = Pt(9)
-
-        doc.add_paragraph()  # 空行分隔
+    if references:
+        doc.add_section(WD_SECTION_START.NEW_PAGE)
+        _add_reference_heading(doc)
+        for index, reference in enumerate(references, start=1):
+            _add_reference_paragraph(doc, _numbered_reference(reference, index))
 
     doc.save(output_path)
-    print(f"  [References] 参考文献已写入文档: {output_path}")
+    print(f"  References appended: {output_path}")

@@ -3,22 +3,8 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  # Python 版本
   - python>=3.10
-
-  # conda 可直接安装的包
-  - pyyaml>=6.0
-  - requests>=2.31.0
-  - lxml>=5.0.0
-  - beautifulsoup4>=4.12.0
-
-  # pip 安装（conda 源中版本较旧或不存在）
   - pip
   - pip:
-    - anthropic>=0.40.0
     - python-docx>=1.1.0
-    - typer>=0.12.0
-
-    # 可选：安装后自动启用更精准的语义相似度评分
-    # 取消下方注释即可启用（需额外约 500MB 下载）
-    # - sentence-transformers>=3.0.0
+    - pyyaml>=6.0

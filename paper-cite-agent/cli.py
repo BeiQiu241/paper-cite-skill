@@ -1,108 +1,137 @@
-"""CLI 入口：paper-cite-agent 命令行接口。"""
+"""Simple CLI entrypoint for the codex-only paper-cite-agent."""
 
+from __future__ import annotations
+
+import argparse
+import json
 import sys
 from pathlib import Path
 
-import typer
-
-# 确保模块路径
 _HERE = Path(__file__).parent
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
-app = typer.Typer(
-    name="paper-cite-agent",
-    help="论文参考文献检索 Agent：自动分析论文内容，推荐并标注参考文献。",
-    add_completion=False,
-)
+from main import run_pipeline
+from modules.codex_backend import CodexTaskPending, decode_state_token
 
 
-@app.command()
-def main(
-    docx_file: Path = typer.Argument(
-        ...,
-        help="论文 Word 文件路径",
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-    ),
-    config: Path = typer.Option(
-        None,
-        "--config", "-c",
-        help="配置文件路径（默认使用同目录 config.yaml）",
-        exists=False,
-    ),
-    output_dir: Path = typer.Option(
-        None,
-        "--output", "-o",
-        help="输出目录（默认与输入文件相同目录）",
-    ),
-    cn_count: int = typer.Option(
-        5,
-        "--cn",
-        help="推荐中文文献数量（默认 5）",
-        min=0,
-        max=20,
-    ),
-    en_count: int = typer.Option(
-        5,
-        "--en",
-        help="推荐英文文献数量（默认 5）",
-        min=0,
-        max=20,
-    ),
-    ref_format: str = typer.Option(
-        "APA",
-        "--format", "-f",
-        help="参考文献格式：APA 或 IEEE",
-    ),
-):
-    """
-    分析论文 Word 文件，搜索匹配的学术文献，并在文档中标注引用位置。
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command line parser."""
+    parser = argparse.ArgumentParser(
+        prog="paper-cite-agent",
+        description="Analyze a Word paper, map citation positions, and generate references.",
+    )
+    parser.add_argument("docx_file", type=Path, help="Path to the input .docx file.")
+    parser.add_argument("-c", "--config", type=Path, help="Optional config YAML path.")
+    parser.add_argument("-o", "--output", type=Path, help="Optional output directory.")
+    parser.add_argument("--cn", type=int, default=None, help="Target Chinese reference count.")
+    parser.add_argument("--en", type=int, default=None, help="Target English reference count.")
+    parser.add_argument(
+        "-f",
+        "--format",
+        default=None,
+        help="Reference format: GBT7714, APA, or IEEE.",
+    )
+    parser.add_argument(
+        "--backend",
+        default="codex",
+        help="Only `codex` is supported in the simplified build.",
+    )
+    parser.add_argument(
+        "--task-dir",
+        type=Path,
+        help="Deprecated. Kept only for backward compatibility and ignored.",
+    )
+    parser.add_argument(
+        "--codex-state",
+        default="",
+        help="Opaque state token returned by a previous pending Codex step.",
+    )
+    parser.add_argument(
+        "--codex-step",
+        default="",
+        help="Step name for the supplied Codex response, such as 01-paper-analysis.",
+    )
+    parser.add_argument(
+        "--codex-response-json",
+        default="",
+        help="Inline JSON response for the supplied Codex step.",
+    )
+    parser.add_argument(
+        "--codex-response-stdin",
+        action="store_true",
+        help="Read the supplied Codex response JSON from stdin.",
+    )
+    return parser
 
-    示例：
-        paper-cite-agent thesis.docx
-        paper-cite-agent thesis.docx --cn 4 --en 3 --format IEEE
-        paper-cite-agent thesis.docx --output ./output
-    """
-    from main import run_pipeline, load_config
-    import yaml
 
-    typer.echo(f"\n📖 正在处理: {docx_file}")
+def _load_codex_state(args: argparse.Namespace) -> dict:
+    """Decode prior state and inject one optional step response."""
+    state = decode_state_token(args.codex_state)
 
-    # 如果通过命令行指定了参数，临时覆盖配置
-    cfg = load_config(str(config) if config else None)
-    cfg.setdefault("ranking", {})["top_k"] = cn_count + en_count
-    cfg.setdefault("output", {})["reference_format"] = ref_format.upper()
+    if not args.codex_step:
+        if args.codex_response_json or args.codex_response_stdin:
+            raise RuntimeError("A Codex response was supplied without --codex-step.")
+        return state
 
-    # 将覆盖后的配置写入临时文件
-    import tempfile, os
+    if args.codex_response_json and args.codex_response_stdin:
+        raise RuntimeError("Use either --codex-response-json or --codex-response-stdin, not both.")
 
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
-    ) as tmp:
-        yaml.dump(cfg, tmp, allow_unicode=True)
-        tmp_config = tmp.name
+    response_text = args.codex_response_json
+    if args.codex_response_stdin:
+        response_text = sys.stdin.read()
+
+    if not response_text.strip():
+        raise RuntimeError("A Codex response was requested but no JSON payload was provided.")
 
     try:
+        state[args.codex_step] = json.loads(response_text)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"Failed to parse Codex response JSON: {exc}") from exc
+    return state
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the simplified pipeline."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    if not args.docx_file.exists():
+        parser.error(f"File not found: {args.docx_file}")
+
+    try:
+        codex_state = _load_codex_state(args)
         result = run_pipeline(
-            docx_path=str(docx_file),
-            config_path=tmp_config,
-            output_dir=str(output_dir) if output_dir else None,
-            cn_count=cn_count,
-            en_count=en_count,
+            docx_path=str(args.docx_file),
+            config_path=str(args.config) if args.config else None,
+            output_dir=str(args.output) if args.output else None,
+            cn_count=args.cn,
+            en_count=args.en,
+            backend=args.backend,
+            task_dir=str(args.task_dir) if args.task_dir else None,
+            ref_format=args.format,
+            codex_state=codex_state,
         )
+    except CodexTaskPending as exc:
+        print("Codex task input prepared.")
+        print(f"step: {exc.step}")
+        print(f"state_token: {exc.state_token}")
+        print("request_json_begin")
+        print(exc.request_json)
+        print("request_json_end")
+        return 2
     except KeyboardInterrupt:
-        typer.echo("\n⚠ 用户中断操作", err=True)
-        raise typer.Exit(1)
-    except Exception as e:
-        typer.echo(f"\n❌ 运行失败: {e}", err=True)
-        import traceback
-        traceback.print_exc()
-        raise typer.Exit(1)
-    finally:
-        os.unlink(tmp_config)
+        print("Interrupted.")
+        return 1
+    except Exception as exc:
+        print(f"Run failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("Done")
+    for label, path in (result.get("output_files") or {}).items():
+        print(f"{label}: {path}")
+    return 0
 
 
 if __name__ == "__main__":
-    app()
+    raise SystemExit(main())

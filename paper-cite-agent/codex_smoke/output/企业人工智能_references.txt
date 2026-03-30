@@ -1,0 +1,21 @@
+[LLM审查] 选出 2 篇（中文 1 篇 / 英文 1 篇）
+============================================================
+
+Sun, & Qian (2016). Chinese Herbal Medicine Image Recognition and Retrieval by Convolutional Neural Network.  *PLoS ONE*.
+
+Miao. (2023). Image recognition of traditional Chinese medicine based on deep learning. Frontiers in Bioengineering and Biotechnology.
+
+
+
+【全部候选文献（按相关度排序）】
+============================================================
+共 2 篇
+
+── 中国机构/中文文献（1 篇）──
+
+Miao. (2023). Image recognition of traditional Chinese medicine based on deep learning. Frontiers in Bioengineering and Biotechnology.
+
+── 英文文献（1 篇）──
+
+Sun, & Qian (2016). Chinese Herbal Medicine Image Recognition and Retrieval by Convolutional Neural Network.  *PLoS ONE*.
+
