@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paper Cite Agent"
+  short_description: "Run the bundled Word citation workflow and generate cited output files."
+  default_prompt: "Use $paper-cite-agent to run the bundled codex-based paper citation workflow on a .docx file, complete any pending step responses, and generate the final cited document plus references."
