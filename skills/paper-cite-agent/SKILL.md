@@ -13,12 +13,19 @@ Treat `scripts/papercite_runtime/main.py` as the pipeline orchestrator when debu
 
 ## Prepare The Environment
 
-Install dependencies from the skill folder before the first run:
+Use `scripts/install_runtime.py` when you want an explicit setup step:
 
 ```powershell
-python -m pip install -r "<skill-dir>\scripts\requirements.txt"
+python "<skill-dir>\scripts\install_runtime.py"
 ```
 
+Use `scripts/install_and_run.ps1` when you want one command that installs dependencies and immediately runs the workflow:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "<skill-dir>\scripts\install_and_run.ps1" "D:\path\to\paper.docx" --backend codex
+```
+
+If the user runs `scripts/run_papercite.py` directly without a setup step, the wrapper should auto-install missing `python-docx` and `pyyaml` dependencies on first run.
 Use the bundled default config at `scripts/papercite_runtime/config.yaml` unless the user provides another config file.
 Default to `--backend codex`.
 Do not require or mention external API keys unless the user explicitly asks for a non-codex backend.
@@ -56,6 +63,16 @@ Get-Content "D:\path\to\response.json" | python "<skill-dir>\scripts\run_paperci
 ```
 
 Repeat until the pipeline prints `Done`.
+
+## Install From GitHub
+
+For Codex CLI users, prefer a one-line install plus dependency bootstrap command after they publish the repo:
+
+```powershell
+$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }; python (Join-Path $codexHome "skills/.system/skill-installer/scripts/install-skill-from-github.py") --repo "<owner>/<repo>" --path "skills/paper-cite-agent"; python (Join-Path $codexHome "skills/paper-cite-agent/scripts/install_runtime.py")
+```
+
+For Codex Desktop users who provide a GitHub link, install the skill from that link, run `scripts/install_runtime.py`, and verify the wrapper with `--help` before handing the workflow back to the user.
 
 ## Troubleshoot By Module
 
