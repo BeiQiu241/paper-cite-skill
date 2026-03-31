@@ -69,10 +69,10 @@ Repeat until the pipeline prints `Done`.
 For Codex CLI users, prefer a one-line install plus dependency bootstrap command after they publish the repo:
 
 ```powershell
-$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }; python (Join-Path $codexHome "skills/.system/skill-installer/scripts/install-skill-from-github.py") --repo "<owner>/<repo>" --path "skills/paper-cite-agent"; python (Join-Path $codexHome "skills/paper-cite-agent/scripts/install_runtime.py")
+$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }; python (Join-Path $codexHome "skills/.system/skill-installer/scripts/install-skill-from-github.py") --repo "BeiQiu241/paper-cite-skill" --path "skills/paper-cite-agent"; python (Join-Path $codexHome "skills/paper-cite-agent/scripts/install_runtime.py")
 ```
 
-For Codex Desktop users who provide a GitHub link, install the skill from that link, run `scripts/install_runtime.py`, and verify the wrapper with `--help` before handing the workflow back to the user.
+For Codex Desktop users who provide `https://github.com/BeiQiu241/paper-cite-skill`, install the skill from path `skills/paper-cite-agent`, run `scripts/install_runtime.py`, and verify the wrapper with `--help` before handing the workflow back to the user.
 
 ## Troubleshoot By Module
 
