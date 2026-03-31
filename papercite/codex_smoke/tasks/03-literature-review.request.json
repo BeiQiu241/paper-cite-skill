@@ -87,5 +87,5 @@
     ]
   },
   "step": "03-literature-review",
-  "expected_response_path": "D:\\py projects\\paper-agent\\paper-cite-agent\\codex_smoke\\tasks\\03-literature-review.response.json"
+  "expected_response_path": "D:\\py projects\\paper-agent\\papercite\\codex_smoke\\tasks\\03-literature-review.response.json"
 }

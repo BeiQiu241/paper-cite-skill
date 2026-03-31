@@ -62,5 +62,5 @@
     "crossref_email": ""
   },
   "step": "02-literature-search",
-  "expected_response_path": "D:\\py projects\\paper-agent\\paper-cite-agent\\codex_smoke\\tasks\\02-literature-search.response.json"
+  "expected_response_path": "D:\\py projects\\paper-agent\\papercite\\codex_smoke\\tasks\\02-literature-search.response.json"
 }

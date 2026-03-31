@@ -1,4 +1,4 @@
-name: paper-cite-agent
+name: papercite
 channels:
   - conda-forge
   - defaults

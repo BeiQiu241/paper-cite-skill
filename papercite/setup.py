@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 
 setup(
-    name="paper-cite-agent",
+    name="papercite",
     version="1.0.0",
     description="A simplified codex-only paper citation helper for Word documents.",
     packages=find_packages(),
@@ -12,7 +12,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "paper-cite-agent=cli:main",
+            "papercite=cli:main",
         ],
     },
     python_requires=">=3.10",

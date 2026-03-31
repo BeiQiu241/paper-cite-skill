@@ -1,4 +1,4 @@
-"""Main pipeline for the simplified codex-only paper-cite-agent."""
+"""Main pipeline for the simplified codex-only papercite."""
 
 from __future__ import annotations
 

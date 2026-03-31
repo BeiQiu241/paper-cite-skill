@@ -278,5 +278,5 @@
     ]
   },
   "step": "04-citation-positions",
-  "expected_response_path": "D:\\py projects\\paper-agent\\paper-cite-agent\\codex_smoke\\tasks\\04-citation-positions.response.json"
+  "expected_response_path": "D:\\py projects\\paper-agent\\papercite\\codex_smoke\\tasks\\04-citation-positions.response.json"
 }

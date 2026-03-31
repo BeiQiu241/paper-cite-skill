@@ -1,4 +1,4 @@
-"""Simple CLI entrypoint for the codex-only paper-cite-agent."""
+"""Simple CLI entrypoint for the codex-only papercite."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from modules.codex_backend import CodexTaskPending, decode_state_token
 def build_parser() -> argparse.ArgumentParser:
     """Build the command line parser."""
     parser = argparse.ArgumentParser(
-        prog="paper-cite-agent",
+        prog="papercite",
         description="Analyze a Word paper, map citation positions, and generate references.",
     )
     parser.add_argument("docx_file", type=Path, help="Path to the input .docx file.")
