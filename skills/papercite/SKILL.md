@@ -1,9 +1,9 @@
 ---
-name: paper-cite-agent
-description: Analyze a .docx thesis or paper, search Chinese and English literature, map citation positions, write citations back into Word, and generate a references list by using the bundled Paper Cite runtime. Use when Codex needs to run, troubleshoot, or adapt an automatic paper-citation workflow for Word documents, citation insertion, reference formatting, or misplaced annotations. Prefer the bundled `codex` backend and do not require external model APIs unless the user explicitly asks for them.
+name: papercite
+description: Analyze a .docx thesis or paper, search Chinese and English literature, map citation positions, write citations back into Word, and generate a references list by using the bundled papercite runtime. Use when Codex needs to run, troubleshoot, or adapt an automatic paper-citation workflow for Word documents, citation insertion, reference formatting, or misplaced annotations. Prefer the bundled `codex` backend and do not require external model APIs unless the user explicitly asks for them.
 ---
 
-# Paper Cite Agent
+# papercite
 
 ## Use The Bundled Runtime
 
@@ -69,10 +69,10 @@ Repeat until the pipeline prints `Done`.
 For Codex CLI users, prefer a one-line install plus dependency bootstrap command after they publish the repo:
 
 ```powershell
-$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }; python (Join-Path $codexHome "skills/.system/skill-installer/scripts/install-skill-from-github.py") --repo "BeiQiu241/paper-cite-skill" --path "skills/paper-cite-agent"; python (Join-Path $codexHome "skills/paper-cite-agent/scripts/install_runtime.py")
+$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }; python (Join-Path $codexHome "skills/.system/skill-installer/scripts/install-skill-from-github.py") --repo "BeiQiu241/paper-cite-skill" --path "skills/papercite"; python (Join-Path $codexHome "skills/papercite/scripts/install_runtime.py")
 ```
 
-For Codex Desktop users who provide `https://github.com/BeiQiu241/paper-cite-skill`, install the skill from path `skills/paper-cite-agent`, run `scripts/install_runtime.py`, and verify the wrapper with `--help` before handing the workflow back to the user.
+For Codex Desktop users who provide `https://github.com/BeiQiu241/paper-cite-skill`, install the skill from path `skills/papercite`, run `scripts/install_runtime.py`, and verify the wrapper with `--help` before handing the workflow back to the user.
 
 ## Troubleshoot By Module
 
