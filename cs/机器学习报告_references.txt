@@ -1,0 +1,13 @@
+参考文献
+========================================
+
+[1] Asma Cherif, Arwa Badhib, Heyfa Ammar, et al. Credit card fraud detection in the era of disruptive technologies: A systematic review[J]. Journal of King Saud University - Computer and Information Sciences. 2023, 35(1): 145-174. DOI: 10.1016/j.jksuci.2022.11.008.
+[2] Eyad Btoush, Thaeer Kobbaey, Hatem Tamimi, et al. Machine Learning-Based Cyber Fraud Detection: A Comparative Study of Resampling Methods for Imbalanced Credit Card Data[J]. Applied Sciences. 2026, 16(2): 850. DOI: 10.3390/app16020850.
+[3] Abhinav Srivastava, Amlan Kundu, Shamik Sural, et al. Credit card fraud detection using hidden Markov model[J]. IEEE Transactions on Dependable and Secure Computing. 2008, 5(1): 37-48. DOI: 10.1109/TDSC.2007.70228.
+[4] Y. G. Sahin, E. Duman. Detecting credit card fraud by decision trees and support vector machines[J]. Proceedings of the International MultiConference of Engineers and Computer Scientists. 2011: 442-447.
+[5] Siddhartha Ghosh, Douglas L. Reilly. Credit card fraud detection with a neural-network[J]. Proceedings of the Twenty-Seventh Hawaii International Conference on System Sciences. 1994: 621-630. DOI: 10.1109/HICSS.1994.323314.
+[6] 黄家元. 一种基于特征敏感的信用卡欺诈检测模型[J]. 计算机科学与应用. 2021, 11(12): 3019-3027. DOI: 10.12677/CSA.2021.1112305.
+[7] 林鹏. 基于嵌入法–卷积神经网络的信用卡欺诈检测研究[J]. 应用数学进展. 2022, 11(2): 717-725. DOI: 10.12677/AAM.2022.112078.
+[8] 张海洋, 陈玉明, 曾念峰, 等. 基于XGBoost与LR融合模型的信用卡欺诈检测[J]. 重庆理工大学学报. 2024, 38(5): 195-200,6. DOI: 10.3969/j.issn.1674-8425(z).2024.03.021.
+[9] 徐永华. 基于支持向量机的信用卡欺诈检测[J]. 计算机仿真. 2011, 28(8): 376-379+384.
+[10] 琚春华, 陈冠宇, 鲍福光. 基于kNN-Smote-LSTM的消费金融风险检测模型——以信用卡欺诈检测为例[J]. 系统科学与数学. 2021, 41(2): 481-498.
