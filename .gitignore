@@ -1,5 +1,6 @@
 __pycache__/
 *.py[cod]
 .idea/
+.codex-tmp/
 .DS_Store
 Thumbs.db
