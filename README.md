@@ -5,20 +5,5 @@
 仓库地址：
 `https://github.com/BeiQiu241/paper-cite-skill`
 
-一键安装并补依赖：
-
-```powershell
-$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }; python (Join-Path $codexHome "skills/.system/skill-installer/scripts/install-skill-from-github.py") --repo BeiQiu241/paper-cite-skill --path skills/papercite; python (Join-Path $codexHome "skills/papercite/scripts/install_runtime.py")
-```
-
-默认 `fast` 为单命令闭环执行：
-
-```powershell
-python "<skill-dir>\scripts\run_papercite.py" "D:\path\to\paper.docx" --backend codex --mode fast
-```
-
-只在调试旧流程时使用：
-
-```powershell
-python "<skill-dir>\scripts\run_papercite.py" "D:\path\to\paper.docx" --backend codex --mode interactive
-```
+安装方法：  
+<img width="807" height="168" alt="27fb6862-82b5-47d4-853b-9e0df8c44169" src="https://github.com/user-attachments/assets/5af34ddb-bc6b-44d8-ba74-ae6857cf6f94" />
