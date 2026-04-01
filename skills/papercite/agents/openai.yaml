@@ -1,4 +1,4 @@
 interface:
   display_name: "papercite"
   short_description: "Run the bundled Word citation workflow and generate cited output files."
-  default_prompt: "Use $papercite to run the bundled codex-based paper citation workflow on a .docx file, complete any pending step responses, and generate the final cited document plus references."
+  default_prompt: "Use $papercite to run the bundled codex-based paper citation workflow on a .docx file, default to fast execution with minimal confirmation, ask at most one upfront question for Chinese and English reference counts when the user wants custom counts, and otherwise use the default split before generating the final cited document plus references."

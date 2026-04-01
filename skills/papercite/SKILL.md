@@ -5,6 +5,16 @@ description: Analyze a .docx thesis or paper, search Chinese and English literat
 
 # papercite
 
+## Interaction Policy
+
+Default to fast execution with minimal confirmation.
+Do not ask the user to confirm defaults one item at a time.
+If the `.docx` path is clear, run immediately.
+If the user does not specify reference counts, use the default split `--cn 5 --en 5` without asking.
+If the user wants to choose counts, ask one concise question only: how many Chinese papers and how many English papers.
+If the user gives the counts in natural language, map them directly to `--cn` and `--en` without extra confirmation.
+Only ask follow-up questions when a required file path is missing or ambiguous.
+
 ## Use The Bundled Runtime
 
 Use the skill's bundled runtime instead of any machine-specific project path.
@@ -38,6 +48,12 @@ Run the wrapper script with a Word document path:
 python "<skill-dir>\scripts\run_papercite.py" "D:\path\to\paper.docx" --backend codex
 ```
 
+When the user wants a custom literature split, pass it directly:
+
+```powershell
+python "<skill-dir>\scripts\run_papercite.py" "D:\path\to\paper.docx" --backend codex --cn 5 --en 8
+```
+
 Use options when the user asks for custom output or reference counts:
 
 ```powershell
@@ -63,6 +79,21 @@ Get-Content "D:\path\to\response.json" | python "<skill-dir>\scripts\run_paperci
 ```
 
 Repeat until the pipeline prints `Done`.
+
+## Ask For Counts Efficiently
+
+If the user says they want to choose how many references to use, ask once for both numbers together instead of splitting the conversation across multiple confirmations.
+Use this wording pattern:
+
+```text
+How many Chinese papers and how many English papers do you want? If you do not specify, use the default split of 5 Chinese papers and 5 English papers.
+```
+
+Example mappings:
+- `3 Chinese papers and 7 English papers` -> `--cn 3 --en 7`
+- `English only, 8 papers` -> `--cn 0 --en 8`
+- `Chinese only, 6 papers` -> `--cn 6 --en 0`
+- no preference -> `--cn 5 --en 5`
 
 ## Install From GitHub
 

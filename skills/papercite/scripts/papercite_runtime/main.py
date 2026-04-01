@@ -98,6 +98,23 @@ def _build_output_paths(input_path: Path, output_dir: Optional[str]) -> tuple[Pa
     return annotated_path, references_path, final_path
 
 
+def _resolve_reference_counts(
+    selection_cfg: dict[str, Any],
+    cn_count: Optional[int],
+    en_count: Optional[int],
+) -> tuple[int, int]:
+    """Resolve Chinese and English reference counts with fast defaults."""
+    selected_cn = int(cn_count if cn_count is not None else selection_cfg.get("cn_count", 5))
+    selected_en = int(en_count if en_count is not None else selection_cfg.get("en_count", 5))
+
+    if selected_cn < 0 or selected_en < 0:
+        raise RuntimeError("Chinese and English reference counts must be 0 or greater.")
+    if selected_cn == 0 and selected_en == 0:
+        raise RuntimeError("Chinese and English reference counts cannot both be 0.")
+
+    return selected_cn, selected_en
+
+
 def run_pipeline(
     docx_path: str,
     config_path: Optional[str] = None,
@@ -118,8 +135,7 @@ def run_pipeline(
     annotation_cfg = cfg.get("annotation", {})
     output_cfg = cfg.get("output", {})
 
-    selected_cn = int(cn_count if cn_count is not None else selection_cfg.get("cn_count", 5))
-    selected_en = int(en_count if en_count is not None else selection_cfg.get("en_count", 5))
+    selected_cn, selected_en = _resolve_reference_counts(selection_cfg, cn_count, en_count)
     reference_format = str(ref_format or output_cfg.get("reference_format", "GBT7714-2015")).upper()
     save_annotated_docx = bool(output_cfg.get("save_annotated_docx", False))
     del task_dir
@@ -147,6 +163,7 @@ def run_pipeline(
     )
 
     print("[4/8] Searching literature")
+    print(f"  Target references: CN {selected_cn} / EN {selected_en}")
     target_papers = max((selected_cn + selected_en) * 3, 20)
     candidates = task_runner.resolve(
         "02-literature-search",
@@ -240,6 +257,7 @@ def run_pipeline(
         "ranked_papers": ranked,
         "citation_positions": citation_positions,
         "references": references,
+        "selected_counts": {"cn": selected_cn, "en": selected_en},
         "output_files": output_files,
         "backend": "codex",
         "task_dir": None,

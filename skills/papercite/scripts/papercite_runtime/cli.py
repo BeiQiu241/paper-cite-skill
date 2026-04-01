@@ -24,8 +24,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("docx_file", type=Path, help="Path to the input .docx file.")
     parser.add_argument("-c", "--config", type=Path, help="Optional config YAML path.")
     parser.add_argument("-o", "--output", type=Path, help="Optional output directory.")
-    parser.add_argument("--cn", type=int, default=None, help="Target Chinese reference count.")
-    parser.add_argument("--en", type=int, default=None, help="Target English reference count.")
+    parser.add_argument(
+        "--cn",
+        "--zh",
+        "--cn-count",
+        dest="cn",
+        type=int,
+        default=None,
+        help="Target Chinese reference count.",
+    )
+    parser.add_argument(
+        "--en",
+        "--en-count",
+        dest="en",
+        type=int,
+        default=None,
+        help="Target English reference count.",
+    )
     parser.add_argument(
         "-f",
         "--format",
@@ -65,6 +80,16 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _validate_reference_counts(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Validate optional Chinese and English reference counts."""
+    if args.cn is not None and args.cn < 0:
+        parser.error("--cn must be 0 or greater.")
+    if args.en is not None and args.en < 0:
+        parser.error("--en must be 0 or greater.")
+    if args.cn == 0 and args.en == 0:
+        parser.error("--cn and --en cannot both be 0.")
+
+
 def _load_codex_state(args: argparse.Namespace) -> dict:
     """Decode prior state and inject one optional step response."""
     state = decode_state_token(args.codex_state)
@@ -95,6 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run the simplified pipeline."""
     parser = build_parser()
     args = parser.parse_args(argv)
+    _validate_reference_counts(parser, args)
 
     if not args.docx_file.exists():
         parser.error(f"File not found: {args.docx_file}")
