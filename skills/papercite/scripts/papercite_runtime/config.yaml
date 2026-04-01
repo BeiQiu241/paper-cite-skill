@@ -1,5 +1,6 @@
 execution:
   backend: codex
+  mode: fast
 
 selection:
   cn_count: 5

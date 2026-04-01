@@ -6,13 +6,13 @@ import re
 from typing import Any, Dict, List
 
 
-_TOC_PATTERN = re.compile(r"^.{0,80}(?:\.{3,}|…{2,})\s*\d+\s*$")
+_TOC_PATTERN = re.compile(r"^.{0,80}(?:\.{3,}|\u2026{2,})\s*\d+\s*$")
 _HEADER_FOOTER_PATTERN = re.compile(
-    r"(第\s*\d+\s*页|\bpage\b|copyright|confidential|draft)",
+    r"(\u7b2c\s*\d+\s*\u9875|\bpage\b|copyright|confidential|draft)",
     re.IGNORECASE,
 )
 _REFERENCE_SECTION_PATTERN = re.compile(
-    r"^(参考文献|references|bibliography|works cited)\s*$",
+    r"^(\u53c2\u8003\u6587\u732e|references|bibliography|works cited)\s*$",
     re.IGNORECASE,
 )
 

@@ -90,7 +90,7 @@ def extract_abstract(paragraphs: List[Dict[str, Any]]) -> str:
     in_abstract = False
 
     for para in paragraphs:
-        text = para.get("text", "").strip()
+        text = str(para.get("text", "") or "").strip()
         lowered = text.lower()
 
         if lowered in {"abstract", "摘要"}:

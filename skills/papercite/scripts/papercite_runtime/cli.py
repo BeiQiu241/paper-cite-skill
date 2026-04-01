@@ -53,6 +53,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Only `codex` is supported in the simplified build.",
     )
     parser.add_argument(
+        "--mode",
+        choices=["fast", "interactive"],
+        default=None,
+        help="Pipeline mode. Default is `fast`; use `interactive` only for manual step injection/debugging.",
+    )
+    parser.add_argument(
         "--task-dir",
         type=Path,
         help="Deprecated. Kept only for backward compatibility and ignored.",
@@ -71,6 +77,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--codex-response-json",
         default="",
         help="Inline JSON response for the supplied Codex step.",
+    )
+    parser.add_argument(
+        "--codex-response-file",
+        type=Path,
+        default=None,
+        help="Read the supplied Codex response JSON from a file.",
     )
     parser.add_argument(
         "--codex-response-stdin",
@@ -95,15 +107,23 @@ def _load_codex_state(args: argparse.Namespace) -> dict:
     state = decode_state_token(args.codex_state)
 
     if not args.codex_step:
-        if args.codex_response_json or args.codex_response_stdin:
+        if args.codex_response_json or args.codex_response_file or args.codex_response_stdin:
             raise RuntimeError("A Codex response was supplied without --codex-step.")
         return state
 
-    if args.codex_response_json and args.codex_response_stdin:
-        raise RuntimeError("Use either --codex-response-json or --codex-response-stdin, not both.")
+    response_sources = sum(
+        bool(source)
+        for source in (args.codex_response_json, args.codex_response_file, args.codex_response_stdin)
+    )
+    if response_sources > 1:
+        raise RuntimeError(
+            "Use only one of --codex-response-json, --codex-response-file, or --codex-response-stdin."
+        )
 
     response_text = args.codex_response_json
-    if args.codex_response_stdin:
+    if args.codex_response_file:
+        response_text = args.codex_response_file.read_text(encoding="utf-8-sig")
+    elif args.codex_response_stdin:
         response_text = sys.stdin.read()
 
     if not response_text.strip():
@@ -137,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
             task_dir=str(args.task_dir) if args.task_dir else None,
             ref_format=args.format,
             codex_state=codex_state,
+            pipeline_mode=args.mode,
         )
     except CodexTaskPending as exc:
         print("Codex task input prepared.")

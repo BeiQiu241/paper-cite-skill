@@ -18,6 +18,7 @@ from modules.codex_backend import CodexTaskRunner
 from modules.codex_task_specs import build_search_task, validate_search_result
 from modules.docx_marker import annotate_docx
 from modules.docx_reader import get_full_text, read_docx
+from modules.fast_path import build_fast_track_task, validate_fast_track_result
 from modules.llm_ranker import build_review_task, validate_review_result
 from modules.paper_analyzer import build_analysis_task, extract_abstract, validate_analysis_result
 from modules.reference_formatter import append_references_to_docx, generate_reference_list, save_references_txt
@@ -25,7 +26,7 @@ from modules.text_cleaner import clean_paragraphs, merge_short_paragraphs
 
 
 DEFAULT_CONFIG: dict[str, Any] = {
-    "execution": {"backend": "codex"},
+    "execution": {"backend": "codex", "mode": "fast"},
     "selection": {"cn_count": 5, "en_count": 5},
     "annotation": {
         "highlight_color": "none",
@@ -38,6 +39,22 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "write_to_docx": True,
     },
 }
+
+
+def _resolve_pipeline_mode(
+    execution_cfg: dict[str, Any],
+    pipeline_mode: Optional[str],
+    codex_state: Optional[dict[str, Any]],
+) -> str:
+    """Resolve fast vs interactive pipeline mode."""
+    if pipeline_mode:
+        return str(pipeline_mode).strip().lower()
+    if codex_state:
+        return "interactive"
+    configured = str(execution_cfg.get("mode", "") or "").strip().lower()
+    if configured in {"fast", "interactive"}:
+        return configured
+    return "fast"
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -125,12 +142,14 @@ def run_pipeline(
     task_dir: Optional[str] = None,
     ref_format: Optional[str] = None,
     codex_state: Optional[dict[str, Any]] = None,
+    pipeline_mode: Optional[str] = None,
 ) -> dict[str, Any]:
     """Run the simplified codex-only pipeline."""
     if str(backend).lower() != "codex":
         raise RuntimeError("The simplified build only supports the `codex` backend.")
 
     cfg = load_config(config_path)
+    execution_cfg = cfg.get("execution", {})
     selection_cfg = cfg.get("selection", {})
     annotation_cfg = cfg.get("annotation", {})
     output_cfg = cfg.get("output", {})
@@ -138,6 +157,7 @@ def run_pipeline(
     selected_cn, selected_en = _resolve_reference_counts(selection_cfg, cn_count, en_count)
     reference_format = str(ref_format or output_cfg.get("reference_format", "GBT7714-2015")).upper()
     save_annotated_docx = bool(output_cfg.get("save_annotated_docx", False))
+    resolved_mode = _resolve_pipeline_mode(execution_cfg, pipeline_mode, codex_state)
     del task_dir
 
     input_path = Path(docx_path)
@@ -156,36 +176,53 @@ def run_pipeline(
     print("[3/8] Analyzing paper")
     abstract = extract_abstract(cleaned)
     analysis_text = abstract if len(abstract) >= 120 else full_text
-    analysis = task_runner.resolve(
-        "01-paper-analysis",
-        build_analysis_task(analysis_text),
-        validate_analysis_result,
-    )
+    if resolved_mode != "fast":
+        analysis = task_runner.resolve(
+            "01-paper-analysis",
+            build_analysis_task(analysis_text),
+            validate_analysis_result,
+        )
 
     print("[4/8] Searching literature")
     print(f"  Target references: CN {selected_cn} / EN {selected_en}")
     target_papers = max((selected_cn + selected_en) * 3, 20)
-    candidates = task_runner.resolve(
-        "02-literature-search",
-        build_search_task(analysis, target_papers=target_papers),
-        validate_search_result,
-    )
+    if resolved_mode == "fast":
+        analysis, ranked, citation_positions = task_runner.resolve(
+            "01-fast-track-plan",
+            build_fast_track_task(
+                text_excerpt=analysis_text,
+                paragraphs=cleaned,
+                cn_count=selected_cn,
+                en_count=selected_en,
+                target_papers=target_papers,
+            ),
+            lambda result: validate_fast_track_result(result, cleaned, echo_logs=True),
+        )
+        candidates = ranked
+    else:
+        candidates = task_runner.resolve(
+            "02-literature-search",
+            build_search_task(analysis, target_papers=target_papers),
+            validate_search_result,
+        )
     print(f"  Candidates: {len(candidates)}")
 
     print("[5/8] Selecting references")
-    ranked = task_runner.resolve(
-        "03-literature-review",
-        build_review_task(candidates, analysis, selected_cn, selected_en),
-        lambda result: validate_review_result(result, candidates, echo_logs=True),
-    )
+    if resolved_mode != "fast":
+        ranked = task_runner.resolve(
+            "03-literature-review",
+            build_review_task(candidates, analysis, selected_cn, selected_en),
+            lambda result: validate_review_result(result, candidates, echo_logs=True),
+        )
     references = generate_reference_list(ranked, fmt=reference_format)
 
     print("[6/8] Mapping citation positions")
-    citation_positions = task_runner.resolve(
-        "04-citation-positions",
-        build_citation_task(cleaned, ranked),
-        lambda result: validate_citation_result(result, cleaned, ranked, echo_logs=True),
-    )
+    if resolved_mode != "fast":
+        citation_positions = task_runner.resolve(
+            "04-citation-positions",
+            build_citation_task(cleaned, ranked),
+            lambda result: validate_citation_result(result, cleaned, ranked, echo_logs=True),
+        )
     print(f"  Positions: {len(citation_positions)}")
 
     print("[7/8] Writing cited document")
@@ -261,4 +298,5 @@ def run_pipeline(
         "output_files": output_files,
         "backend": "codex",
         "task_dir": None,
+        "pipeline_mode": resolved_mode,
     }
