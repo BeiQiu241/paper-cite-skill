@@ -1,6 +1,7 @@
 # papercite
 
-`papercite` 是一个处理 `.docx` 论文的 Codex skill，可自动生成引文、参考文献列表，并写回最终 Word 文件。
+`papercite` 是一个处理 `.docx` 论文的 Codex skill，可自动生成引文、参考文献列表，并写回最终 Word 文件。  
+
 效果：上传一篇论文  
 自动找出参考文献并标注且写入  
 
