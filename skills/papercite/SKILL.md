@@ -1,6 +1,6 @@
 ---
 name: papercite
-description: Analyze a .docx thesis or paper, search Chinese and English literature, map citation positions, write citations back into Word, and generate a references list by using the bundled papercite runtime. Use when Codex needs to run, troubleshoot, or adapt an automatic paper-citation workflow for Word documents, citation insertion, reference formatting, or misplaced annotations. Prefer the bundled `codex` backend and the default one-shot fast mode; only use the legacy interactive mode for debugging.
+description: Analyze a .docx thesis or paper, search Chinese and English literature, map citation positions, write citations back into Word, and generate a references list by using the bundled papercite runtime. Use when Codex needs to run, troubleshoot, or adapt an automatic paper-citation workflow for Word documents, citation insertion, reference formatting, or misplaced annotations. Prefer the bundled `codex` backend and the default closed-loop fast mode; use the legacy interactive mode only for debugging.
 ---
 
 # papercite
@@ -10,7 +10,7 @@ description: Analyze a .docx thesis or paper, search Chinese and English literat
 Default to fast execution with minimal confirmation.
 Do not ask the user to confirm defaults one item at a time.
 If the `.docx` path is clear, run immediately.
-If the user does not specify reference counts, use the default split `--cn 5 --en 5` without asking.
+If the user does not specify reference counts, use `--cn 5 --en 5` without asking.
 If the user wants custom counts, ask once for both numbers together.
 Only ask follow-up questions when a required file path is missing or ambiguous.
 
@@ -66,66 +66,11 @@ Expect these outputs unless `--output` overrides them:
 
 ## Fast-Track Behavior
 
-Fast mode collapses the old multi-step workflow into one combined Codex task.
-The runtime should usually stop at most once before it can finish.
-
-If the wrapper exits with `Codex task input prepared`, it will print:
-- `step: 01-fast-track-plan`
-- `state_token: <opaque-token>`
-- a JSON payload between `request_json_begin` and `request_json_end`
-
-Read that request JSON, then return one combined response containing:
-- `analysis`
-- `refs`
-- `cites`
-
-Prefer this compact standard template:
-
-```json
-{
-  "analysis": {
-    "field": "Research field",
-    "field_zh": "研究领域",
-    "summary": "Short summary",
-    "problem": "Core problem",
-    "keywords": ["kw1", "kw2"],
-    "keywords_zh": ["关键词1", "关键词2"],
-    "methods": ["method 1", "method 2"],
-    "queries": ["english search query"],
-    "queries_zh": ["中文检索词"]
-  },
-  "refs": [
-    {
-      "title": "Paper title",
-      "authors": ["Author A", "Author B"],
-      "year": 2024,
-      "journal": "Journal name",
-      "doi": "10.xxxx/xxxx",
-      "url": "https://example.com",
-      "lang": "en",
-      "reason": "Why this paper was selected"
-    }
-  ],
-  "cites": [
-    {
-      "p": 12,
-      "r": 0,
-      "why": "Why this paragraph should cite the paper"
-    }
-  ]
-}
-```
-
-The runtime also accepts the older long-form keys for backward compatibility.
-
-Rerun the same command with the saved state token plus the completed step response.
-Prefer the file-based path on Windows:
-
-```powershell
-python "<skill-dir>\scripts\run_papercite.py" "D:\path\to\paper.docx" --backend codex --mode fast --codex-state "<state-token>" --codex-step "01-fast-track-plan" --codex-response-file "D:\path\to\response.json"
-```
-
-Use `--mode interactive` only when debugging the legacy staged workflow.
+Fast mode is the default closed-loop path.
+The runtime should resolve the combined planning task internally by calling Codex CLI in non-interactive mode.
+Do not ask the user to create, edit, or pass intermediate JSON files in normal fast-mode execution.
+Treat `Codex task input prepared` as a legacy debug path only.
+Use `--mode interactive` only when explicitly debugging the older staged workflow.
 
 ## Ask For Counts Efficiently
 
@@ -144,7 +89,7 @@ Example mappings:
 
 ## Install From GitHub
 
-For Codex CLI users, prefer a one-line install plus dependency bootstrap command after they publish the repo:
+For Codex CLI users, prefer a one-line install plus dependency bootstrap command:
 
 ```powershell
 $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }; python (Join-Path $codexHome "skills/.system/skill-installer/scripts/install-skill-from-github.py") --repo "BeiQiu241/paper-cite-skill" --path "skills/papercite"; python (Join-Path $codexHome "skills/papercite/scripts/install_runtime.py")
@@ -156,15 +101,15 @@ For Codex Desktop users who provide `https://github.com/BeiQiu241/paper-cite-ski
 
 Inspect these files first when the workflow misbehaves:
 - `scripts/papercite_runtime/main.py`: pipeline order, output paths, and top-level exception handling.
-- `scripts/papercite_runtime/modules/fast_path.py`: single-response fast-track request and validation.
+- `scripts/papercite_runtime/modules/codex_exec.py`: non-interactive Codex CLI fast-mode runner.
+- `scripts/papercite_runtime/modules/fast_path.py`: one-shot fast-track request and validation.
 - `scripts/papercite_runtime/modules/text_cleaner.py`: filtering of table-of-contents text, headers, footers, and references.
 - `scripts/papercite_runtime/modules/citation_locator.py`: paragraph selection rules and paragraph index validation.
 - `scripts/papercite_runtime/modules/docx_marker.py`: Word write-back, highlighting, and appended citations.
 - `scripts/papercite_runtime/modules/reference_formatter.py`: formatted reference output and final reference list writing.
-- `scripts/papercite_runtime/modules/codex_backend.py`: pending-step state token and request/response handoff.
 
 Check paragraph index consistency before blaming model quality. If cleaned paragraphs are re-numbered incorrectly, citations can land in a table of contents or heading instead of the target body paragraph.
-If a resumed run fails, verify that the response JSON matches the combined fast-track schema before rerunning.
+If fast mode fails, report the exact Codex CLI error and fall back to `--mode interactive` only for debugging.
 
 ## Respond Clearly
 

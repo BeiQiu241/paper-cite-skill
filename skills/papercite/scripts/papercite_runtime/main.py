@@ -15,6 +15,7 @@ if str(_HERE) not in sys.path:
 
 from modules.citation_locator import build_citation_task, validate_citation_result
 from modules.codex_backend import CodexTaskRunner
+from modules.codex_exec import solve_fast_track_request
 from modules.codex_task_specs import build_search_task, validate_search_result
 from modules.docx_marker import annotate_docx
 from modules.docx_reader import get_full_text, read_docx
@@ -187,16 +188,28 @@ def run_pipeline(
     print(f"  Target references: CN {selected_cn} / EN {selected_en}")
     target_papers = max((selected_cn + selected_en) * 3, 20)
     if resolved_mode == "fast":
-        analysis, ranked, citation_positions = task_runner.resolve(
-            "01-fast-track-plan",
-            build_fast_track_task(
-                text_excerpt=analysis_text,
-                paragraphs=cleaned,
-                cn_count=selected_cn,
-                en_count=selected_en,
-                target_papers=target_papers,
-            ),
-            lambda result: validate_fast_track_result(result, cleaned, echo_logs=True),
+        fast_request = build_fast_track_task(
+            text_excerpt=analysis_text,
+            paragraphs=cleaned,
+            cn_count=selected_cn,
+            en_count=selected_en,
+            target_papers=target_papers,
+        )
+        if "01-fast-track-plan" in task_runner.responses:
+            fast_result = task_runner.resolve(
+                "01-fast-track-plan",
+                fast_request,
+                lambda result: result,
+            )
+        else:
+            fast_result = solve_fast_track_request(
+                fast_request,
+                workdir=input_path.parent.resolve(),
+            )
+        analysis, ranked, citation_positions = validate_fast_track_result(
+            fast_result,
+            cleaned,
+            echo_logs=True,
         )
         candidates = ranked
     else:
